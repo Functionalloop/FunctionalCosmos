@@ -14,10 +14,6 @@ function ComingSoonOverlay() {
 
   return (
     <>
-      <link
-        href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@200;300&family=Cinzel+Decorative:wght@400&display=swap"
-        rel="stylesheet"
-      />
 
       <div
         style={{
