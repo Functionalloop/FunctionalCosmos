@@ -530,6 +530,7 @@ function CosmicDust() {
   return (
     <points ref={ref}>
       <bufferGeometry>
+        {/* @ts-ignore */}
         <bufferAttribute
           attach="attributes-position"
           count={positions.length / 3}

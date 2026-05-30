@@ -21,7 +21,7 @@ export default function CosmosCanvas() {
         onPointerMissed={() => {
           if (currentState === 0) {
             setViewState(4);
-          } else if (currentState !== 0 && currentState !== 4) {
+          } else if (currentState !== 4) {
             setViewState(0);
             setPlanet(null);
           }

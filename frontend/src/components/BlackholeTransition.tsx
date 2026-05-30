@@ -15,13 +15,22 @@ export default function BlackholeTransition() {
   useEffect(() => {
     if (isBlackholeTransitioning && pendingDetailPlanet && !navigatedRef.current) {
       navigatedRef.current = true;
-      // After the animation completes (1400ms), navigate to the planet detail page
-      const timer = setTimeout(() => {
+      
+      // Navigate exactly when the screen becomes completely black (1400ms)
+      const navTimer = setTimeout(() => {
         router.push(`/planet/${pendingDetailPlanet}`);
+      }, 1400);
+
+      // Give the new page a moment to render under the black screen before fading out
+      const clearTimer = setTimeout(() => {
         clearBlackholeTransition();
         navigatedRef.current = false;
-      }, 1400);
-      return () => clearTimeout(timer);
+      }, 1800);
+
+      return () => {
+        clearTimeout(navTimer);
+        clearTimeout(clearTimer);
+      };
     }
   }, [isBlackholeTransitioning, pendingDetailPlanet, router, clearBlackholeTransition]);
 
@@ -33,6 +42,8 @@ export default function BlackholeTransition() {
           className="fixed inset-0 z-[9999] flex items-center justify-center overflow-hidden pointer-events-all"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.5 }}
           style={{ backgroundColor: 'transparent' }}
         >
           {/* Darkening backdrop */}
