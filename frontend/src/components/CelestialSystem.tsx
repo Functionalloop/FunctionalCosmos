@@ -1,8 +1,8 @@
 'use client';
 
-import { useRef, useMemo } from 'react';
+import { useRef, useMemo, useEffect } from 'react';
 import { useFrame } from '@react-three/fiber';
-import { Html } from '@react-three/drei';
+import { Html, Sparkles } from '@react-three/drei';
 import * as THREE from 'three';
 import { useStore, PlanetType } from '../store/useStore';
 import { PLANETS_CONFIG, PlanetConfig } from '../utils/celestialData';
@@ -82,7 +82,7 @@ function Sun() {
     <group>
       {/* Inner Core — Dense, bright, hot yellow-white */}
       <mesh ref={coreRef} position={[0, 0, 0]}>
-        <sphereGeometry args={[2.5, 64, 64]} />
+        <sphereGeometry args={[3.75, 64, 64]} />
         <meshStandardMaterial 
           color="#fb923c"
           emissive="#fed7aa"
@@ -94,7 +94,7 @@ function Sun() {
       
       {/* Corona Layer 1 — Tight, bright amber haze */}
       <mesh ref={corona1Ref}>
-        <sphereGeometry args={[2.75, 64, 64]} />
+        <sphereGeometry args={[4.125, 64, 64]} />
         <meshBasicMaterial 
           color="#ea580c"
           transparent 
@@ -106,7 +106,7 @@ function Sun() {
 
       {/* Corona Layer 2 — Mid glow, warm orange-yellow */}
       <mesh ref={corona2Ref}>
-        <sphereGeometry args={[3.1, 48, 48]} />
+        <sphereGeometry args={[4.65, 48, 48]} />
         <meshBasicMaterial 
           color="#fb923c"
           transparent 
@@ -118,7 +118,7 @@ function Sun() {
 
       {/* Corona Layer 3 — Outer atmosphere bloom, pale warm */}
       <mesh ref={corona3Ref}>
-        <sphereGeometry args={[3.6, 32, 32]} />
+        <sphereGeometry args={[5.4, 32, 32]} />
         <meshBasicMaterial 
           color="#ffedd5"
           transparent 
@@ -130,7 +130,7 @@ function Sun() {
 
       {/* Solar Flare — Large, faint, pulsing warm halo */}
       <mesh ref={flareRef}>
-        <sphereGeometry args={[4.5, 24, 24]} />
+        <sphereGeometry args={[6.75, 24, 24]} />
         <meshBasicMaterial 
           color="#fff7ed"
           transparent 
@@ -153,9 +153,10 @@ interface MoonProps {
   parentPos: [number, number, number];
   onSelect: () => void;
   isActive: boolean;
+  planetSize: number;
 }
 
-function Moon({ name, slug, orbitRadius, orbitSpeed, color, parentPos, onSelect, isActive }: MoonProps) {
+function Moon({ name, slug, orbitRadius, orbitSpeed, color, parentPos, onSelect, isActive, planetSize }: MoonProps) {
   const meshRef = useRef<THREE.Mesh>(null);
   const glowRef = useRef<THREE.Mesh>(null);
 
@@ -182,8 +183,7 @@ function Moon({ name, slug, orbitRadius, orbitSpeed, color, parentPos, onSelect,
       audioManager.playClick();
       onSelect();
     }}>
-      {/* Moon Surface */}
-      <sphereGeometry args={[0.18, 24, 24]} />
+      <sphereGeometry args={[0.18 * Math.max(1, planetSize * 0.6), 24, 24]} />
       <meshStandardMaterial 
         color={isActive ? "#ffffff" : color} 
         emissive={isActive ? "#ffffff" : color} 
@@ -192,16 +192,10 @@ function Moon({ name, slug, orbitRadius, orbitSpeed, color, parentPos, onSelect,
         metalness={0.85}
       />
       
-      {/* Soft Aura Glow */}
+      {/* Glow Layer */}
       <mesh ref={glowRef}>
-        <sphereGeometry args={[0.28, 12, 12]} />
-        <meshBasicMaterial 
-          color={color} 
-          transparent 
-          opacity={isActive ? 0.5 : 0.2} 
-          blending={THREE.AdditiveBlending}
-          depthWrite={false}
-        />
+        <sphereGeometry args={[0.24 * Math.max(1, planetSize * 0.6), 24, 24]} />
+        <meshBasicMaterial color={color} transparent opacity={0.2} blending={THREE.AdditiveBlending} depthWrite={false} />
       </mesh>
 
       {/* Moon Label */}
@@ -279,12 +273,13 @@ function Planet({ config }: PlanetProps) {
 
   // Moon data
   const moonsData = useMemo(() => {
+    const sz = config.size;
     if (config.type === 'projects') {
       return projects.map((p, index) => ({
         name: p.title,
         slug: p.slug,
-        orbitRadius: 1.2 + index * 0.35,
-        orbitSpeed: 0.9 - index * 0.15,
+        orbitRadius: sz + 0.6 + index * (0.35 * sz),
+        orbitSpeed: (0.9 - index * 0.15) / Math.max(1, sz * 0.5),
       }));
     }
     if (config.type === 'tech_stack') {
@@ -292,28 +287,27 @@ function Planet({ config }: PlanetProps) {
       return categories.slice(0, 4).map((cat, index) => ({
         name: cat,
         slug: cat.toLowerCase(),
-        orbitRadius: 1.1 + index * 0.3,
-        orbitSpeed: 0.8 - index * 0.12,
+        orbitRadius: sz + 0.5 + index * (0.3 * sz),
+        orbitSpeed: (0.8 - index * 0.12) / Math.max(1, sz * 0.5),
       }));
     }
     if (config.type === 'academics') {
       return academics.map((a, index) => ({
         name: a.degree.split(' ').slice(-2).join(' ') || a.institution.split(' ')[0],
         slug: `acad-${a.id}`,
-        orbitRadius: 1.0 + index * 0.4,
-        orbitSpeed: 0.7 - index * 0.1,
+        orbitRadius: sz + 0.4 + index * (0.4 * sz),
+        orbitSpeed: (0.7 - index * 0.1) / Math.max(1, sz * 0.5),
       }));
     }
     if (config.type === 'socials') {
       return socials.slice(0, 4).map((s, index) => ({
         name: s.platform,
         slug: s.platform.toLowerCase(),
-        orbitRadius: 0.9 + index * 0.25,
-        orbitSpeed: 1.1 - index * 0.15,
+        orbitRadius: sz + 0.4 + index * (0.25 * sz),
+        orbitSpeed: (1.1 - index * 0.15) / Math.max(1, sz * 0.5),
       }));
     }
     if (config.type === 'resume') {
-      // Build moon slugs from live data — each section becomes a moon
       const sections = [
         { name: 'Experience', slug: 'resume-experience', available: resumeExperience.length > 0 },
         { name: 'Skills', slug: 'resume-skills', available: resumeSkills.length > 0 },
@@ -323,8 +317,8 @@ function Planet({ config }: PlanetProps) {
       return sections.map((sec, index) => ({
         name: sec.name,
         slug: sec.slug,
-        orbitRadius: 1.0 + index * 0.32,
-        orbitSpeed: 0.85 - index * 0.12,
+        orbitRadius: sz + 0.5 + index * (0.32 * sz),
+        orbitSpeed: (0.85 - index * 0.12) / Math.max(1, sz * 0.5),
       }));
     }
     return [];
@@ -475,9 +469,12 @@ function Planet({ config }: PlanetProps) {
           >
             <span 
               className={`font-cinzel tracking-[0.2em] uppercase whitespace-nowrap ${
-                isSelected ? 'text-[#f0fdfa] text-lg font-bold' : 'text-teal-100/80 text-base'
+                isSelected ? 'text-[#f0fdfa] font-bold' : 'text-teal-100/80'
               }`}
-              style={{ textShadow: `0 0 15px ${config.color}, 0 2px 8px rgba(0,0,0,0.9)` }}
+              style={{ 
+                fontSize: `${Math.max(0.7, config.size * 0.8)}rem`,
+                textShadow: `0 0 15px ${config.color}, 0 2px 8px rgba(0,0,0,0.9)` 
+              }}
             >
               {config.name}
             </span>
@@ -500,6 +497,7 @@ function Planet({ config }: PlanetProps) {
             parentPos={currentPosTuple()}
             onSelect={() => selectMoon(moon.slug)}
             isActive={activeMoon === moon.slug}
+            planetSize={config.size}
           />
         ))}
       </mesh>
@@ -507,50 +505,89 @@ function Planet({ config }: PlanetProps) {
   );
 }
 
-// --- Dust Particles (Ambient cosmic dust floating in the scene) ---
-function CosmicDust() {
-  const ref = useRef<THREE.Points>(null);
+// --- Galaxy Nebula (Glowing cosmic gas / galaxy types) ---
+function GalaxyNebula() {
+  return (
+    <group>
+      {/* Distant Teal Nebula */}
+      <Sparkles 
+        count={800} 
+        scale={60} 
+        size={8} 
+        speed={0.2} 
+        opacity={0.15} 
+        color="#5eead4" 
+        position={[-30, 10, -40]} 
+      />
+      {/* Warm Amber Nebula */}
+      <Sparkles 
+        count={600} 
+        scale={45} 
+        size={10} 
+        speed={0.1} 
+        opacity={0.15} 
+        color="#fb923c" 
+        position={[30, -5, -20]} 
+      />
+      {/* Deep Purple Core Dust */}
+      <Sparkles 
+        count={500} 
+        scale={30} 
+        size={6} 
+        speed={0.3} 
+        opacity={0.2} 
+        color="#c084fc" 
+        position={[0, -10, -10]} 
+      />
+    </group>
+  );
+}
 
-  const { positions, sizes } = useMemo(() => {
-    const count = 300;
-    const pos = new Float32Array(count * 3);
-    const sz = new Float32Array(count);
+// --- Asteroid Belt (Debris Field) ---
+function AsteroidBelt() {
+  const meshRef = useRef<THREE.InstancedMesh>(null);
+  const count = 1200;
+  
+  const dummy = useMemo(() => new THREE.Object3D(), []);
+  
+  useEffect(() => {
+    if (!meshRef.current) return;
+    
     for (let i = 0; i < count; i++) {
-      pos[i * 3] = (Math.random() - 0.5) * 100;
-      pos[i * 3 + 1] = (Math.random() - 0.5) * 40;
-      pos[i * 3 + 2] = (Math.random() - 0.5) * 100;
-      sz[i] = Math.random() * 0.5 + 0.1;
+      // Create a wide debris ring between radius 23 and 29 (between TechStack and Socials)
+      const radius = 23 + Math.random() * 6; 
+      const theta = Math.random() * Math.PI * 2;
+      const y = (Math.random() - 0.5) * 1.5;
+      
+      dummy.position.set(radius * Math.cos(theta), y, radius * Math.sin(theta));
+      dummy.rotation.set(Math.random() * Math.PI, Math.random() * Math.PI, Math.random() * Math.PI);
+      const scale = Math.random() * 0.12 + 0.03; // Tiny to medium debris
+      dummy.scale.set(scale, scale, scale);
+      dummy.updateMatrix();
+      
+      meshRef.current.setMatrixAt(i, dummy.matrix);
     }
-    return { positions: pos, sizes: sz };
-  }, []);
+    meshRef.current.instanceMatrix.needsUpdate = true;
+  }, [dummy, count]);
 
   useFrame((state) => {
-    if (ref.current) {
-      ref.current.rotation.y = state.clock.getElapsedTime() * 0.005;
+    if (meshRef.current) {
+      // Slowly rotate the entire asteroid belt
+      meshRef.current.rotation.y = state.clock.getElapsedTime() * 0.015;
     }
   });
 
   return (
-    <points ref={ref}>
-      <bufferGeometry>
-        {/* @ts-ignore */}
-        <bufferAttribute
-          attach="attributes-position"
-          count={positions.length / 3}
-          array={positions}
-          itemSize={3}
-        />
-      </bufferGeometry>
-      <pointsMaterial
-        size={0.08}
-        color="#99f6e4"
-        transparent
-        opacity={0.3}
-        blending={THREE.AdditiveBlending}
-        depthWrite={false}
-        sizeAttenuation
+    <instancedMesh ref={meshRef} args={[undefined, undefined, count]}>
+      <dodecahedronGeometry args={[1, 0]} />
+      <meshStandardMaterial 
+        color="#a8a29e" 
+        roughness={0.9} 
+        metalness={0.2} 
+        emissive="#333333" 
+        emissiveIntensity={0.2} 
       />
-    </points>
+    </instancedMesh>
   );
 }
 
@@ -559,7 +596,8 @@ export default function CelestialSystem() {
   return (
     <group>
       <Sun />
-      <CosmicDust />
+      <GalaxyNebula />
+      <AsteroidBelt />
       
       <Planet config={PLANETS_CONFIG.projects} />
       <Planet config={PLANETS_CONFIG.tech_stack} />

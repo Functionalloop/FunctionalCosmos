@@ -98,6 +98,17 @@ function getTheme(planet: PlanetType | null) {
   }
 }
 
+function getPlanetIcon(type: PlanetType) {
+  switch (type) {
+    case 'projects': return FolderGit2;
+    case 'tech_stack': return Cpu;
+    case 'academics': return GraduationCap;
+    case 'socials': return Share2;
+    case 'resume': return Compass;
+    default: return Star;
+  }
+}
+
 function renderMarkdown(text: string, theme: any) {
   if (!text) return null;
   return text.split('\n').map((line, idx) => {
@@ -174,6 +185,7 @@ export default function UIOverlay() {
 
   const planetConfig = activePlanet ? PLANETS_CONFIG[activePlanet] : null;
   const theme = getTheme(activePlanet);
+  const activeColor = activePlanet ? PLANETS_CONFIG[activePlanet].color : '#a78bfa';
 
   const getStateTitle = () => {
     switch (currentState) {
@@ -244,14 +256,17 @@ export default function UIOverlay() {
             </span>
           </motion.div>
         )}
-      </AnimatePresence>
-
-      {/* --- ADDON FEATURE: SLIDE-OUT SYSTEM INDEX --- */}
+      </AnimatePresence>      {/* --- ADDON FEATURE: SLIDE-OUT SYSTEM INDEX --- */}
       <div className="absolute right-0 top-1/2 -translate-y-1/2 pointer-events-auto z-[100] flex items-center">
         {/* Toggle Button */}
         <button
           onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-          className="bg-teal-950/80 border-y border-l border-teal-500/30 p-2 rounded-l-md hover:bg-teal-900 transition-colors text-teal-400 backdrop-blur-md cursor-pointer shadow-[-5px_0_15px_rgba(0,0,0,0.5)]"
+          className="p-2.5 rounded-l-md hover:bg-violet-900/10 transition-colors backdrop-blur-md cursor-pointer shadow-[-5px_0_15px_rgba(0,0,0,0.5)] flex items-center justify-center animate-pulse border-y border-l"
+          style={{ 
+            backgroundColor: 'rgba(2, 8, 12, 0.85)', 
+            borderColor: `${activeColor}40`, 
+            color: activeColor 
+          }}
         >
           {isSidebarOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
         </button>
@@ -261,43 +276,261 @@ export default function UIOverlay() {
           {isSidebarOpen && (
             <motion.div
               initial={{ width: 0, opacity: 0 }}
-              animate={{ width: 220, opacity: 1 }}
+              animate={{ width: 320, opacity: 1 }}
               exit={{ width: 0, opacity: 0 }}
-              className="bg-teal-950/80 border-y border-l border-teal-500/30 overflow-hidden backdrop-blur-md rounded-l-xl py-6 shadow-[-10px_0_30px_rgba(0,0,0,0.5)]"
+              className="border-y border-l overflow-hidden backdrop-blur-md rounded-l-xl py-6 shadow-[-10px_0_30px_rgba(0,0,0,0.5)] flex flex-col justify-between max-h-[85vh] relative"
+              style={{ 
+                backgroundColor: 'rgba(2, 8, 12, 0.92)', 
+                borderColor: `${activeColor}30` 
+              }}
             >
-              <div className="w-[220px] px-6">
-                <div className="font-cormorant text-xs uppercase tracking-[0.3em] text-teal-500/50 mb-6 border-b border-teal-500/10 pb-2">
-                  System Index
+              {/* Sci-Fi Holographic Border Accents */}
+              <div className="absolute top-0 left-0 w-3 h-3 border-t-2 border-l-2" style={{ borderColor: `${activeColor}60` }} />
+              <div className="absolute bottom-0 left-0 w-3 h-3 border-b-2 border-l-2" style={{ borderColor: `${activeColor}60` }} />
+
+              <div className="w-[320px] px-6 overflow-y-auto custom-scrollbar flex-1">
+                {/* Header & Telemetry */}
+                <div className="flex flex-col gap-1 mb-5 border-b pb-3" style={{ borderColor: `${activeColor}20` }}>
+                  <div 
+                    className="font-cinzel text-xs uppercase tracking-[0.3em] font-bold transition-all duration-500"
+                    style={{ color: activeColor, textShadow: `0 0 10px ${activeColor}80` }}
+                  >
+                    System Navigator
+                  </div>
+                  <div 
+                    className="font-mono text-[8px] uppercase tracking-widest flex justify-between mt-1 transition-colors duration-500"
+                    style={{ color: `${activeColor}60` }}
+                  >
+                    <span>LOCKED: {activePlanet ? activePlanet.toUpperCase() : 'ALL_SYSTEMS'}</span>
+                    <span>COORD: {activePlanet ? `${PLANETS_CONFIG[activePlanet].radius}.00 AU` : '0.00 AU'}</span>
+                  </div>
                 </div>
-                <div className="flex flex-col gap-6">
+
+                {/* SVG Mini Orbital Map */}
+                <div 
+                  className="flex flex-col items-center mb-5 border rounded-lg p-3 relative transition-all duration-500"
+                  style={{ backgroundColor: `${activeColor}10`, borderColor: `${activeColor}20` }}
+                >
+                  <div className="absolute top-1 left-2 font-mono text-[6.5px] tracking-widest" style={{ color: `${activeColor}50` }}>ORBITAL SCHEMATIC</div>
+                  <svg viewBox="0 0 120 120" className="w-28 h-28 mt-2">
+                    {/* Sun */}
+                    <circle cx="60" cy="60" r="7" fill="#f59e0b" className="animate-pulse" style={{ filter: 'drop-shadow(0 0 5px rgba(245,158,11,0.8))' }} />
+                    
+                    {/* Planet Orbits & Dots */}
+                    {Object.values(PLANETS_CONFIG).map((planet, idx) => {
+                      const radius = 18 + idx * 8;
+                      const isSelected = activePlanet === planet.type;
+                      return (
+                        <g key={planet.type}>
+                          {/* Orbit Line */}
+                          <circle
+                            cx="60"
+                            cy="60"
+                            r={radius}
+                            fill="none"
+                            stroke={isSelected ? planet.color : `${activeColor}20`}
+                            strokeWidth={isSelected ? '0.75' : '0.5'}
+                            strokeDasharray={isSelected ? 'none' : '2 3'}
+                            className="transition-colors duration-300"
+                          />
+                          {/* Rotating Planet Group */}
+                          <motion.g
+                            animate={{ rotate: 360 }}
+                            transition={{ repeat: Infinity, duration: 15 + idx * 6, ease: 'linear' }}
+                            style={{ transformOrigin: '60px 60px' }}
+                          >
+                            <motion.circle
+                              cx={60 + radius}
+                              cy="60"
+                              r={isSelected ? 3.5 : 1.8}
+                              fill={planet.color}
+                              animate={isSelected ? { scale: [1, 1.4, 1] } : {}}
+                              transition={{ repeat: Infinity, duration: 1.5, ease: 'easeInOut' }}
+                              style={{ filter: isSelected ? `drop-shadow(0 0 4px ${planet.color})` : undefined }}
+                            />
+                          </motion.g>
+                        </g>
+                      );
+                    })}
+                  </svg>
+                </div>
+
+                <div className="flex flex-col gap-4">
+                  {/* Global View Button (Solar System) */}
+                  <div className="flex flex-col gap-1">
+                    <div
+                      onClick={() => {
+                        setPlanet(null);
+                      }}
+                      className="group flex items-center gap-3 cursor-pointer"
+                    >
+                      <div 
+                        className="relative flex items-center justify-center w-8 h-8 rounded-full border bg-teal-950/20 transition-all duration-500"
+                        style={{
+                          borderColor: !activePlanet ? '#fed7aa' : `${activeColor}25`,
+                          boxShadow: !activePlanet ? '0 0 8px rgba(254, 215, 170, 0.4)' : undefined,
+                        }}
+                      >
+                        {!activePlanet && (
+                          <motion.div
+                            className="absolute inset-0 rounded-full border-t border-b border-transparent"
+                            style={{ borderColor: '#fed7aa' }}
+                            animate={{ rotate: 360 }}
+                            transition={{ repeat: Infinity, duration: 3, ease: 'linear' }}
+                          />
+                        )}
+                        <Star className="w-4 h-4 transition-colors duration-300" style={{ color: !activePlanet ? '#fed7aa' : `${activeColor}60` }} />
+                      </div>
+                      
+                      <div className="flex-1 flex flex-col items-start gap-0.5">
+                        <span className={`font-cinzel text-xs uppercase tracking-[0.2em] transition-all duration-300 ${!activePlanet ? 'font-bold scale-105 text-[#fed7aa] drop-shadow-[0_0_8px_rgba(254,215,170,0.8)]' : 'text-teal-100/50 group-hover:text-teal-100'}`}>
+                          Solar System
+                        </span>
+                        <span 
+                          className="font-mono text-[8px] uppercase tracking-[0.15em] transition-colors duration-300"
+                          style={{ color: !activePlanet ? '#fed7aa80' : `${activeColor}40` }}
+                        >
+                          COORDINATES: CENTRAL
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
                   {Object.values(PLANETS_CONFIG).map((planet) => {
                     const isSelected = activePlanet === planet.type;
+                    const PlanetIcon = getPlanetIcon(planet.type);
+
+                    // Inline helper to compute planet stats
+                    const getPlanetTelemetry = (type: PlanetType) => {
+                      switch (type) {
+                        case 'projects': return `MODS ONLINE: ${projects.length}`;
+                        case 'tech_stack': return `TOOL MATRIX: ${Array.from(new Set(techStack.map(t => t.category))).length}`;
+                        case 'academics': return `ARCHIVES: ${academics.length}`;
+                        case 'socials': return `UPLINKS ACTIVE: ${socials.length}`;
+                        case 'resume': return `LOGS COMPILED: 4`;
+                        default: return 'TELESCOPE LOCK';
+                      }
+                    };
+
+                    // Generate sub-items (moons) for the selected planet
+                    let subItems: { name: string, slug: string }[] = [];
+                    if (isSelected) {
+                      if (planet.type === 'projects') subItems = projects.map(p => ({ name: p.title, slug: p.slug }));
+                      if (planet.type === 'tech_stack') subItems = Array.from(new Set(techStack.map(t => t.category))).slice(0,4).map(c => ({ name: c, slug: c.toLowerCase() }));
+                      if (planet.type === 'academics') subItems = academics.map(a => ({ name: a.degree.split(' ').slice(-2).join(' ') || a.institution.split(' ')[0], slug: `acad-${a.id}` }));
+                      if (planet.type === 'socials') subItems = socials.slice(0,4).map(s => ({ name: s.platform, slug: s.platform.toLowerCase() }));
+                      if (planet.type === 'resume') {
+                        if (resumeExperience.length > 0) subItems.push({ name: 'Experience', slug: 'resume-experience' });
+                        if (resumeSkills.length > 0) subItems.push({ name: 'Skills', slug: 'resume-skills' });
+                        if (resumeEducation.length > 0) subItems.push({ name: 'Education', slug: 'resume-education' });
+                        if (resumeCertifications.length > 0) subItems.push({ name: 'Certifications', slug: 'resume-certifications' });
+                      }
+                    }
+
                     return (
-                      <div
-                        key={planet.type}
-                        onClick={() => {
-                          setPlanet(planet.type as PlanetType);
-                          setViewState(2); // Jump straight into orbit (2nd click behavior)
-                        }}
-                        className="group flex items-center gap-4 cursor-pointer"
-                      >
+                      <div key={planet.type} className="flex flex-col gap-2">
                         <div
-                          className={`h-[1px] transition-all duration-500 ${isSelected ? 'w-8' : 'w-2 group-hover:w-6'}`}
-                          style={{ backgroundColor: isSelected ? planet.color : 'rgba(20, 184, 166, 0.3)' }}
-                        />
-                        <span
-                          className={`font-cinzel text-xs uppercase tracking-[0.2em] transition-all duration-300 ${isSelected ? 'font-bold scale-105' : 'text-teal-100/50 group-hover:text-teal-100'}`}
-                          style={{
-                            color: isSelected ? '#fed7aa' : undefined,
-                            textShadow: isSelected ? `0 0 10px ${planet.color}` : undefined
+                          onClick={() => {
+                            setPlanet(planet.type as PlanetType);
+                            setViewState(2); // Jump straight into orbit
                           }}
+                          className="group flex items-center gap-3 cursor-pointer"
                         >
-                          {planet.name}
-                        </span>
+                          <div 
+                            className="relative flex items-center justify-center w-8 h-8 rounded-full border bg-teal-950/20 transition-all duration-500"
+                            style={{
+                              borderColor: isSelected ? planet.color : `${activeColor}25`,
+                              boxShadow: isSelected ? `0 0 8px ${planet.color}40` : undefined,
+                            }}
+                          >
+                            {isSelected && (
+                              <motion.div
+                                className="absolute inset-0 rounded-full border-t border-b border-transparent"
+                                style={{ borderColor: `${planet.color}aa` }}
+                                animate={{ rotate: 360 }}
+                                transition={{ repeat: Infinity, duration: 3, ease: 'linear' }}
+                              />
+                            )}
+                            <PlanetIcon className="w-4 h-4 transition-colors duration-300" style={{ color: isSelected ? planet.color : `${activeColor}60` }} />
+                          </div>
+
+                          <div className="flex-1 flex flex-col items-start gap-0.5">
+                            <span
+                              className={`font-cinzel text-xs uppercase tracking-[0.2em] transition-all duration-300 ${isSelected ? 'font-bold scale-105' : 'text-teal-100/50 group-hover:text-teal-100'}`}
+                              style={{
+                                color: isSelected ? '#fed7aa' : undefined,
+                                textShadow: isSelected ? `0 0 10px ${planet.color}` : undefined
+                              }}
+                            >
+                              {planet.name}
+                            </span>
+                            <span 
+                              className="font-mono text-[8px] uppercase tracking-[0.15em] transition-colors duration-300"
+                              style={{ color: isSelected ? `${planet.color}80` : `${activeColor}40` }}
+                            >
+                              {getPlanetTelemetry(planet.type)}
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* Nested Sub-navigation (Moons) */}
+                        <AnimatePresence>
+                          {isSelected && subItems.length > 0 && (
+                            <motion.div 
+                              initial={{ opacity: 0, height: 0 }}
+                              animate={{ opacity: 1, height: 'auto' }}
+                              exit={{ opacity: 0, height: 0 }}
+                              className="relative flex flex-col gap-2.5 pl-6 overflow-hidden mb-2 ml-4 border-l pt-1"
+                              style={{ borderColor: `${planet.color}30` }}
+                            >
+                              {subItems.map(item => (
+                                <div 
+                                  key={item.slug}
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    useStore.setState({ activeMoon: item.slug });
+                                    setViewState(3);
+                                  }}
+                                  className="group flex items-center gap-2.5 cursor-pointer py-0.5 relative"
+                                >
+                                  {/* Horizontal connector line */}
+                                  <div className="absolute left-[-24px] w-[16px] h-[1px] transition-colors" style={{ backgroundColor: `${planet.color}30` }} />
+                                  <div 
+                                    className={`w-1.5 h-1.5 rounded-full transition-all duration-300 ${activeMoon === item.slug ? 'scale-125' : 'group-hover:scale-110'}`} 
+                                    style={{ 
+                                      backgroundColor: activeMoon === item.slug ? '#fed7aa' : `${planet.color}60`,
+                                      boxShadow: activeMoon === item.slug ? `0 0 8px ${planet.color}` : undefined
+                                    }}
+                                  />
+                                  <span 
+                                    className="font-cormorant text-[11px] tracking-widest uppercase transition-all duration-300"
+                                    style={{ color: activeMoon === item.slug ? '#fed7aa' : `${planet.color}a0` }}
+                                  >
+                                    {item.name}
+                                  </span>
+                                </div>
+                              ))}
+                            </motion.div>
+                          )}
+                        </AnimatePresence>
                       </div>
                     )
                   })}
                 </div>
+              </div>
+              
+              {/* Bottom Actions */}
+              <div className="px-6 pt-4 mt-3 border-t flex flex-col gap-4" style={{ borderColor: `${activeColor}20` }}>
+                <button 
+                  onClick={() => {
+                    import('../utils/audio').then(m => m.audioManager.toggleMute());
+                  }}
+                  className="flex items-center gap-3 transition-colors cursor-pointer group w-fit"
+                  style={{ color: `${activeColor}a0` }}
+                >
+                  <div className="w-1.5 h-1.5 rounded-full transition-all group-hover:scale-125" style={{ backgroundColor: activeColor }} />
+                  <span className="font-cinzel text-[10px] tracking-widest uppercase hover:text-teal-100 transition-colors">Toggle Audio</span>
+                </button>
               </div>
             </motion.div>
           )}

@@ -5,11 +5,15 @@ import { Stars, OrbitControls } from '@react-three/drei';
 import CameraController from './CameraController';
 import CelestialSystem from './CelestialSystem';
 import { useStore } from '../store/useStore';
+import { PLANETS_CONFIG } from '../utils/celestialData';
 
 export default function CosmosCanvas() {
   const currentState = useStore((state) => state.currentState);
   const setViewState = useStore((state) => state.setViewState);
   const setPlanet = useStore((state) => state.setPlanet);
+  const activePlanet = useStore((state) => state.activePlanet);
+
+  const sz = activePlanet ? PLANETS_CONFIG[activePlanet].size : 1;
 
   return (
     <div className="w-full h-full absolute inset-0 z-0 bg-[#0b0907]">
@@ -80,8 +84,8 @@ export default function CosmosCanvas() {
           autoRotateSpeed={0.5}
 
 
-          maxDistance={currentState === 2 ? 16 : currentState === 3 ? 4.0 : 90}
-          minDistance={currentState === 3 ? 1.1 : 2}
+          maxDistance={currentState === 2 ? 16 * sz : currentState === 3 ? 4.0 * sz : 120}
+          minDistance={currentState === 3 ? 1.1 * sz : 2.2 * sz}
           makeDefault
         />
       </Canvas>

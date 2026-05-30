@@ -13,41 +13,41 @@ export const PLANETS_CONFIG: Record<PlanetType, PlanetConfig> = {
   projects: {
     type: 'projects',
     name: 'Projects',
-    radius: 7,
+    radius: 12,
     speed: 0.25,
-    color: '#2dd4bf', // teal-400 — matches UIOverlay text-teal-400
-    size: 1.0,
+    color: '#2dd4bf', // teal-400
+    size: 1.5, // 1.5x original
   },
   tech_stack: {
     type: 'tech_stack',
     name: 'Tech Stack',
-    radius: 12,
+    radius: 19,
     speed: 0.18,
-    color: '#f59e0b', // amber-500 — matches UIOverlay text-amber-500
-    size: 0.85,
+    color: '#f59e0b', // amber-500
+    size: 1.3, // 1.5x original
   },
   socials: {
     type: 'socials',
     name: 'Socials',
-    radius: 17,
+    radius: 34,
     speed: 0.12,
-    color: '#67e8f9', // cyan-300 — matches UIOverlay text-cyan-300
-    size: 0.65,
+    color: '#67e8f9', // cyan-300
+    size: 1.7, // Large planet
   },
   academics: {
     type: 'academics',
     name: 'Academics',
-    radius: 22,
+    radius: 42,
     speed: 0.08,
-    color: '#ea580c', // orange-600 — matches UIOverlay text-orange-600 / glow-bronze
-    size: 0.75,
+    color: '#ea580c', // orange-600
+    size: 2.4, // Gas giant
   },
   resume: {
     type: 'resume',
     name: 'Resume',
-    radius: 28,
+    radius: 50,
     speed: 0.055,
-    color: '#a78bfa', // violet-400 — matches UIOverlay text-violet-400
-    size: 0.9,
+    color: '#a78bfa', // violet-400
+    size: 3.2, // Massive outer planet
   },
 };

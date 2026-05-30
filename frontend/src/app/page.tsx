@@ -24,7 +24,7 @@ function LaunchRocket() {
       animate={{
         x: [0, -1.5, 1.5, -1, 1, 0],
         y: [0, 1.5, -1, 1, -1.5, 0],
-        rotate: [45, 43.5, 46.5, 44, 46, 45],
+        rotate: [0, -1.5, 1.5, -1, 1, 0], // The Lucide Rocket points 45deg top-right natively
       }}
       transition={{ repeat: Infinity, duration: 0.18, ease: 'easeInOut' }}
       style={{
@@ -32,12 +32,12 @@ function LaunchRocket() {
           'drop-shadow(0 0 8px rgba(94,234,212,0.7)) drop-shadow(0 0 16px rgba(20,184,166,0.35))',
       }}
     >
-      {/* Exhaust flame glow blob — pulses behind icon */}
+      {/* Exhaust flame glow blob — pulses behind the bottom-left tail of the rocket */}
       <motion.div
         className="absolute rounded-full blur-lg"
         style={{
           width: 20, height: 20,
-          bottom: -2, right: -2,
+          bottom: -4, left: -4, // Fixed to bottom-left where the tail actually is
           background: 'radial-gradient(circle, rgba(251,146,60,0.8) 0%, rgba(239,68,68,0.3) 60%, transparent 100%)',
         }}
         animate={{ scale: [1, 1.5, 0.8, 1.4, 1], opacity: [0.7, 1, 0.5, 0.9, 0.7] }}
