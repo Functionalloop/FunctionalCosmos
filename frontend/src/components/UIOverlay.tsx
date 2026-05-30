@@ -173,6 +173,8 @@ export default function UIOverlay() {
   const setPlanet = useStore((state) => state.setPlanet);
   const toggleFreeRoam = useStore((state) => state.toggleFreeRoam);
   const triggerDetailPage = useStore((state) => state.triggerDetailPage);
+  const performanceMode = useStore((state) => state.performanceMode);
+  const togglePerformanceMode = useStore((state) => state.togglePerformanceMode);
 
   const projects = useStore((state) => state.projects);
   const techStack = useStore((state) => state.techStack);
@@ -185,7 +187,7 @@ export default function UIOverlay() {
 
   const planetConfig = activePlanet ? PLANETS_CONFIG[activePlanet] : null;
   const theme = getTheme(activePlanet);
-  const activeColor = activePlanet ? PLANETS_CONFIG[activePlanet].color : '#a78bfa';
+  const activeColor = activePlanet ? PLANETS_CONFIG[activePlanet].color : '#ffffff';
 
   const getStateTitle = () => {
     switch (currentState) {
@@ -200,8 +202,8 @@ export default function UIOverlay() {
   return (
     <div className="absolute inset-0 z-10 pointer-events-none flex flex-col justify-between p-6 select-none">
 
-      {/* --- TOP HUD BAR --- */}
-      <div className="w-full flex justify-between items-center pointer-events-auto">
+      {/* --- TOP HUD BAR (status badge, offset below nav bar) --- */}
+      <div className="w-full flex justify-between items-center pointer-events-auto mt-12">
         {/* Left side empty or reserved for future elements */}
         <div></div>
 
@@ -246,7 +248,7 @@ export default function UIOverlay() {
             animate={{ opacity: 1, x: 0, y: 0 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.6, ease: 'easeOut', delay: 0.1 }}
-            className="absolute top-5 left-6 pointer-events-none flex flex-col items-start gap-0.5"
+            className="absolute top-2 left-6 pointer-events-none flex flex-col items-start gap-0.5 z-[200]"
           >
             <h1 className="font-cinzel text-[clamp(1rem,2vw,1.6rem)] tracking-[0.22em] uppercase m-0 leading-none bg-gradient-to-br from-[#fed7aa] via-[#fb923c] to-[#ea580c] text-transparent bg-clip-text glow-teal drop-shadow-lg">
               Functional
@@ -256,95 +258,183 @@ export default function UIOverlay() {
             </span>
           </motion.div>
         )}
-      </AnimatePresence>      {/* --- ADDON FEATURE: SLIDE-OUT SYSTEM INDEX --- */}
-      <div className="absolute right-0 top-1/2 -translate-y-1/2 pointer-events-auto z-[100] flex items-center">
-        {/* Toggle Button */}
-        <button
-          onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-          className="p-2.5 rounded-l-md hover:bg-violet-900/10 transition-colors backdrop-blur-md cursor-pointer shadow-[-5px_0_15px_rgba(0,0,0,0.5)] flex items-center justify-center animate-pulse border-y border-l"
-          style={{ 
-            backgroundColor: 'rgba(2, 8, 12, 0.85)', 
-            borderColor: `${activeColor}40`, 
-            color: activeColor 
+      </AnimatePresence>
+
+      {/* --- TOP NAVIGATION BAR --- */}
+      <div className="absolute top-0 left-0 right-0 pointer-events-auto z-[100] flex flex-col items-center">
+
+        {/* Top Bar Strip */}
+        <div
+          className="w-full flex items-center justify-between px-6 py-2 backdrop-blur-md relative"
+          style={{
+            backgroundColor: 'rgba(2, 8, 12, 0.82)',
+            borderColor: `${activeColor}25`,
           }}
         >
-          {isSidebarOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-        </button>
+          {/* Corner accents */}
+          <div className="absolute top-0 left-0 w-4 h-4 border-t border-l" style={{ borderColor: `${activeColor}60` }} />
+          <div className="absolute top-0 right-0 w-4 h-4 border-t border-r" style={{ borderColor: `${activeColor}60` }} />
 
-        {/* Slide-out Panel */}
+          {/* Left: spacer to balance flex layout */}
+          <div className="min-w-[160px]" />
+
+          {/* Center: Planet Nav Tabs */}
+          <div className="flex items-center gap-1">
+            {/* Solar System Tab */}
+            <button
+              onClick={() => setPlanet(null)}
+              className="group relative flex items-center gap-1.5 px-3 py-1.5 rounded transition-all duration-300 cursor-pointer"
+              style={{
+                backgroundColor: !activePlanet ? `${activeColor}15` : 'transparent',
+                borderBottom: !activePlanet ? `2px solid #fed7aa` : '2px solid transparent',
+              }}
+            >
+              <div className="relative flex items-center justify-center w-5 h-5 rounded-full border transition-all duration-300"
+                style={{
+                  borderColor: !activePlanet ? '#fed7aa' : `${activeColor}30`,
+                  boxShadow: !activePlanet ? '0 0 6px rgba(254,215,170,0.4)' : undefined,
+                }}
+              >
+                {!activePlanet && (
+                  <motion.div
+                    className="absolute inset-0 rounded-full border-t border-transparent"
+                    style={{ borderColor: '#fed7aa' }}
+                    animate={{ rotate: 360 }}
+                    transition={{ repeat: Infinity, duration: 2.5, ease: 'linear' }}
+                  />
+                )}
+                <Star className="w-2.5 h-2.5" style={{ color: !activePlanet ? '#fed7aa' : `${activeColor}50` }} />
+              </div>
+              <span
+                className="font-cinzel text-[9px] uppercase tracking-[0.18em] transition-all duration-300 whitespace-nowrap"
+                style={{
+                  color: !activePlanet ? '#fed7aa' : `${activeColor}60`,
+                  textShadow: !activePlanet ? '0 0 8px rgba(254,215,170,0.6)' : undefined,
+                }}
+              >
+                Solar
+              </span>
+            </button>
+
+            {/* Divider */}
+            <div className="w-px h-5 mx-1" style={{ backgroundColor: `${activeColor}20` }} />
+
+            {/* Planet Tabs */}
+            {Object.values(PLANETS_CONFIG).map((planet) => {
+              const isSelected = activePlanet === planet.type;
+              const PlanetIcon = getPlanetIcon(planet.type);
+              return (
+                <button
+                  key={planet.type}
+                  onClick={() => { setPlanet(planet.type as PlanetType); setViewState(2); }}
+                  className="group relative flex items-center gap-1.5 px-3 py-1.5 rounded transition-all duration-300 cursor-pointer"
+                  style={{
+                    backgroundColor: isSelected ? `${planet.color}15` : 'transparent',
+                    borderBottom: isSelected ? `2px solid ${planet.color}` : '2px solid transparent',
+                  }}
+                >
+                  <div
+                    className="relative flex items-center justify-center w-5 h-5 rounded-full border transition-all duration-300"
+                    style={{
+                      borderColor: isSelected ? planet.color : `${activeColor}30`,
+                      boxShadow: isSelected ? `0 0 6px ${planet.color}50` : undefined,
+                    }}
+                  >
+                    {isSelected && (
+                      <motion.div
+                        className="absolute inset-0 rounded-full border-t border-transparent"
+                        style={{ borderColor: `${planet.color}cc` }}
+                        animate={{ rotate: 360 }}
+                        transition={{ repeat: Infinity, duration: 2.5, ease: 'linear' }}
+                      />
+                    )}
+                    <PlanetIcon
+                      className="w-2.5 h-2.5 transition-colors duration-300"
+                      style={{ color: isSelected ? planet.color : `${activeColor}50` }}
+                    />
+                  </div>
+                  <span
+                    className="font-cinzel text-[9px] uppercase tracking-[0.18em] transition-all duration-300 whitespace-nowrap"
+                    style={{
+                      color: isSelected ? planet.color : `${activeColor}60`,
+                      textShadow: isSelected ? `0 0 8px ${planet.color}80` : undefined,
+                    }}
+                  >
+                    {planet.name}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Right: Audio toggle + COORD */}
+          <div className="flex items-center gap-4 min-w-[160px] justify-end">
+            <span
+              className="font-mono text-[7px] uppercase tracking-widest transition-colors duration-500"
+              style={{ color: `${activeColor}50` }}
+            >
+              COORD: {activePlanet ? `${PLANETS_CONFIG[activePlanet].radius}.00 AU` : '0.00 AU'}
+            </span>
+            <button
+              onClick={() => { import('../utils/audio').then(m => m.audioManager.toggleMute()); }}
+              className="flex items-center gap-1.5 cursor-pointer group"
+              style={{ color: `${activeColor}70` }}
+            >
+              <div className="w-1.5 h-1.5 rounded-full group-hover:scale-125 transition-all" style={{ backgroundColor: activeColor }} />
+              <span className="font-cinzel text-[8px] tracking-widest uppercase group-hover:text-white transition-colors">Audio</span>
+            </button>
+            {/* Toggle expand for dropdown sub-nav */}
+            <button
+              onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+              className="flex items-center justify-center w-6 h-6 rounded border cursor-pointer transition-all"
+              style={{
+                borderColor: `${activeColor}35`,
+                backgroundColor: isSidebarOpen ? `${activeColor}15` : 'transparent',
+                color: activeColor,
+              }}
+            >
+              {isSidebarOpen ? <X className="w-3 h-3" /> : <Menu className="w-3 h-3" />}
+            </button>
+          </div>
+        </div>
+
+        {/* Dropdown Sub-Nav Panel (moons + mini map) */}
         <AnimatePresence>
           {isSidebarOpen && (
             <motion.div
-              initial={{ width: 0, opacity: 0 }}
-              animate={{ width: 320, opacity: 1 }}
-              exit={{ width: 0, opacity: 0 }}
-              className="border-y border-l overflow-hidden backdrop-blur-md rounded-l-xl py-6 shadow-[-10px_0_30px_rgba(0,0,0,0.5)] flex flex-col justify-between max-h-[85vh] relative"
-              style={{ 
-                backgroundColor: 'rgba(2, 8, 12, 0.92)', 
-                borderColor: `${activeColor}30` 
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: 'auto', opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              transition={{ duration: 0.3, ease: 'easeInOut' }}
+              className="w-full overflow-hidden backdrop-blur-md border-b border-x shadow-[0_10px_40px_rgba(0,0,0,0.6)]"
+              style={{
+                backgroundColor: 'rgba(2, 8, 12, 0.92)',
+                borderColor: `${activeColor}20`,
               }}
             >
-              {/* Sci-Fi Holographic Border Accents */}
-              <div className="absolute top-0 left-0 w-3 h-3 border-t-2 border-l-2" style={{ borderColor: `${activeColor}60` }} />
-              <div className="absolute bottom-0 left-0 w-3 h-3 border-b-2 border-l-2" style={{ borderColor: `${activeColor}60` }} />
+              <div className="flex items-start gap-6 px-6 py-4">
 
-              <div className="w-[320px] px-6 overflow-y-auto custom-scrollbar flex-1">
-                {/* Header & Telemetry */}
-                <div className="flex flex-col gap-1 mb-5 border-b pb-3" style={{ borderColor: `${activeColor}20` }}>
-                  <div 
-                    className="font-cinzel text-xs uppercase tracking-[0.3em] font-bold transition-all duration-500"
-                    style={{ color: activeColor, textShadow: `0 0 10px ${activeColor}80` }}
-                  >
-                    System Navigator
-                  </div>
-                  <div 
-                    className="font-mono text-[8px] uppercase tracking-widest flex justify-between mt-1 transition-colors duration-500"
-                    style={{ color: `${activeColor}60` }}
-                  >
-                    <span>LOCKED: {activePlanet ? activePlanet.toUpperCase() : 'ALL_SYSTEMS'}</span>
-                    <span>COORD: {activePlanet ? `${PLANETS_CONFIG[activePlanet].radius}.00 AU` : '0.00 AU'}</span>
-                  </div>
-                </div>
-
-                {/* SVG Mini Orbital Map */}
-                <div 
-                  className="flex flex-col items-center mb-5 border rounded-lg p-3 relative transition-all duration-500"
-                  style={{ backgroundColor: `${activeColor}10`, borderColor: `${activeColor}20` }}
+                {/* Mini Orbital Map */}
+                <div
+                  className="flex-shrink-0 flex flex-col items-center border rounded-lg p-3 relative transition-all duration-500"
+                  style={{ backgroundColor: `${activeColor}08`, borderColor: `${activeColor}20`, minWidth: '120px' }}
                 >
-                  <div className="absolute top-1 left-2 font-mono text-[6.5px] tracking-widest" style={{ color: `${activeColor}50` }}>ORBITAL SCHEMATIC</div>
-                  <svg viewBox="0 0 120 120" className="w-28 h-28 mt-2">
-                    {/* Sun */}
+                  <div className="font-mono text-[6px] tracking-widest mb-1" style={{ color: `${activeColor}50` }}>ORBITAL SCHEMATIC</div>
+                  <svg viewBox="0 0 120 120" className="w-20 h-20">
                     <circle cx="60" cy="60" r="7" fill="#f59e0b" className="animate-pulse" style={{ filter: 'drop-shadow(0 0 5px rgba(245,158,11,0.8))' }} />
-                    
-                    {/* Planet Orbits & Dots */}
                     {Object.values(PLANETS_CONFIG).map((planet, idx) => {
                       const radius = 18 + idx * 8;
                       const isSelected = activePlanet === planet.type;
                       return (
                         <g key={planet.type}>
-                          {/* Orbit Line */}
-                          <circle
-                            cx="60"
-                            cy="60"
-                            r={radius}
-                            fill="none"
+                          <circle cx="60" cy="60" r={radius} fill="none"
                             stroke={isSelected ? planet.color : `${activeColor}20`}
                             strokeWidth={isSelected ? '0.75' : '0.5'}
                             strokeDasharray={isSelected ? 'none' : '2 3'}
-                            className="transition-colors duration-300"
                           />
-                          {/* Rotating Planet Group */}
-                          <motion.g
-                            animate={{ rotate: 360 }}
-                            transition={{ repeat: Infinity, duration: 15 + idx * 6, ease: 'linear' }}
-                            style={{ transformOrigin: '60px 60px' }}
-                          >
-                            <motion.circle
-                              cx={60 + radius}
-                              cy="60"
-                              r={isSelected ? 3.5 : 1.8}
-                              fill={planet.color}
-                              animate={isSelected ? { scale: [1, 1.4, 1] } : {}}
+                          <motion.g animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 15 + idx * 6, ease: 'linear' }} style={{ transformOrigin: '60px 60px' }}>
+                            <motion.circle cx={60 + radius} cy="60" r={isSelected ? 3 : 1.5} fill={planet.color}
+                              animate={isSelected ? { scale: [1, 1.3, 1] } : {}}
                               transition={{ repeat: Infinity, duration: 1.5, ease: 'easeInOut' }}
                               style={{ filter: isSelected ? `drop-shadow(0 0 4px ${planet.color})` : undefined }}
                             />
@@ -355,183 +445,64 @@ export default function UIOverlay() {
                   </svg>
                 </div>
 
-                <div className="flex flex-col gap-4">
-                  {/* Global View Button (Solar System) */}
-                  <div className="flex flex-col gap-1">
-                    <div
-                      onClick={() => {
-                        setPlanet(null);
-                      }}
-                      className="group flex items-center gap-3 cursor-pointer"
-                    >
-                      <div 
-                        className="relative flex items-center justify-center w-8 h-8 rounded-full border bg-teal-950/20 transition-all duration-500"
-                        style={{
-                          borderColor: !activePlanet ? '#fed7aa' : `${activeColor}25`,
-                          boxShadow: !activePlanet ? '0 0 8px rgba(254, 215, 170, 0.4)' : undefined,
-                        }}
-                      >
-                        {!activePlanet && (
-                          <motion.div
-                            className="absolute inset-0 rounded-full border-t border-b border-transparent"
-                            style={{ borderColor: '#fed7aa' }}
-                            animate={{ rotate: 360 }}
-                            transition={{ repeat: Infinity, duration: 3, ease: 'linear' }}
-                          />
-                        )}
-                        <Star className="w-4 h-4 transition-colors duration-300" style={{ color: !activePlanet ? '#fed7aa' : `${activeColor}60` }} />
-                      </div>
-                      
-                      <div className="flex-1 flex flex-col items-start gap-0.5">
-                        <span className={`font-cinzel text-xs uppercase tracking-[0.2em] transition-all duration-300 ${!activePlanet ? 'font-bold scale-105 text-[#fed7aa] drop-shadow-[0_0_8px_rgba(254,215,170,0.8)]' : 'text-teal-100/50 group-hover:text-teal-100'}`}>
-                          Solar System
-                        </span>
-                        <span 
-                          className="font-mono text-[8px] uppercase tracking-[0.15em] transition-colors duration-300"
-                          style={{ color: !activePlanet ? '#fed7aa80' : `${activeColor}40` }}
-                        >
-                          COORDINATES: CENTRAL
-                        </span>
-                      </div>
+                {/* Sub-items for active planet */}
+                <div className="flex-1">
+                  {!activePlanet && (
+                    <div className="flex flex-col gap-1">
+                      <span className="font-cinzel text-[9px] uppercase tracking-widest" style={{ color: `${activeColor}60` }}>All Systems — Overview</span>
+                      <p className="font-cormorant text-xs text-white/40 mt-1">Select a planet tab above to navigate to its data sector.</p>
                     </div>
-                  </div>
+                  )}
+                  {activePlanet && (() => {
+                    const planet = PLANETS_CONFIG[activePlanet];
+                    const PlanetIcon = getPlanetIcon(activePlanet);
 
-                  {Object.values(PLANETS_CONFIG).map((planet) => {
-                    const isSelected = activePlanet === planet.type;
-                    const PlanetIcon = getPlanetIcon(planet.type);
-
-                    // Inline helper to compute planet stats
-                    const getPlanetTelemetry = (type: PlanetType) => {
-                      switch (type) {
-                        case 'projects': return `MODS ONLINE: ${projects.length}`;
-                        case 'tech_stack': return `TOOL MATRIX: ${Array.from(new Set(techStack.map(t => t.category))).length}`;
-                        case 'academics': return `ARCHIVES: ${academics.length}`;
-                        case 'socials': return `UPLINKS ACTIVE: ${socials.length}`;
-                        case 'resume': return `LOGS COMPILED: 4`;
-                        default: return 'TELESCOPE LOCK';
-                      }
-                    };
-
-                    // Generate sub-items (moons) for the selected planet
                     let subItems: { name: string, slug: string }[] = [];
-                    if (isSelected) {
-                      if (planet.type === 'projects') subItems = projects.map(p => ({ name: p.title, slug: p.slug }));
-                      if (planet.type === 'tech_stack') subItems = Array.from(new Set(techStack.map(t => t.category))).slice(0,4).map(c => ({ name: c, slug: c.toLowerCase() }));
-                      if (planet.type === 'academics') subItems = academics.map(a => ({ name: a.degree.split(' ').slice(-2).join(' ') || a.institution.split(' ')[0], slug: `acad-${a.id}` }));
-                      if (planet.type === 'socials') subItems = socials.slice(0,4).map(s => ({ name: s.platform, slug: s.platform.toLowerCase() }));
-                      if (planet.type === 'resume') {
-                        if (resumeExperience.length > 0) subItems.push({ name: 'Experience', slug: 'resume-experience' });
-                        if (resumeSkills.length > 0) subItems.push({ name: 'Skills', slug: 'resume-skills' });
-                        if (resumeEducation.length > 0) subItems.push({ name: 'Education', slug: 'resume-education' });
-                        if (resumeCertifications.length > 0) subItems.push({ name: 'Certifications', slug: 'resume-certifications' });
-                      }
+                    if (activePlanet === 'projects') subItems = projects.map(p => ({ name: p.title, slug: p.slug }));
+                    if (activePlanet === 'tech_stack') subItems = Array.from(new Set(techStack.map(t => t.category))).slice(0,4).map(c => ({ name: c, slug: c.toLowerCase() }));
+                    if (activePlanet === 'academics') subItems = academics.map(a => ({ name: a.degree.split(' ').slice(-2).join(' ') || a.institution.split(' ')[0], slug: `acad-${a.id}` }));
+                    if (activePlanet === 'socials') subItems = socials.slice(0,4).map(s => ({ name: s.platform, slug: s.platform.toLowerCase() }));
+                    if (activePlanet === 'resume') {
+                      if (resumeExperience.length > 0) subItems.push({ name: 'Experience', slug: 'resume-experience' });
+                      if (resumeSkills.length > 0) subItems.push({ name: 'Skills', slug: 'resume-skills' });
+                      if (resumeEducation.length > 0) subItems.push({ name: 'Education', slug: 'resume-education' });
+                      if (resumeCertifications.length > 0) subItems.push({ name: 'Certifications', slug: 'resume-certifications' });
                     }
 
                     return (
-                      <div key={planet.type} className="flex flex-col gap-2">
-                        <div
-                          onClick={() => {
-                            setPlanet(planet.type as PlanetType);
-                            setViewState(2); // Jump straight into orbit
-                          }}
-                          className="group flex items-center gap-3 cursor-pointer"
-                        >
-                          <div 
-                            className="relative flex items-center justify-center w-8 h-8 rounded-full border bg-teal-950/20 transition-all duration-500"
-                            style={{
-                              borderColor: isSelected ? planet.color : `${activeColor}25`,
-                              boxShadow: isSelected ? `0 0 8px ${planet.color}40` : undefined,
-                            }}
-                          >
-                            {isSelected && (
-                              <motion.div
-                                className="absolute inset-0 rounded-full border-t border-b border-transparent"
-                                style={{ borderColor: `${planet.color}aa` }}
-                                animate={{ rotate: 360 }}
-                                transition={{ repeat: Infinity, duration: 3, ease: 'linear' }}
-                              />
-                            )}
-                            <PlanetIcon className="w-4 h-4 transition-colors duration-300" style={{ color: isSelected ? planet.color : `${activeColor}60` }} />
-                          </div>
-
-                          <div className="flex-1 flex flex-col items-start gap-0.5">
-                            <span
-                              className={`font-cinzel text-xs uppercase tracking-[0.2em] transition-all duration-300 ${isSelected ? 'font-bold scale-105' : 'text-teal-100/50 group-hover:text-teal-100'}`}
+                      <div className="flex flex-col gap-2">
+                        <div className="flex items-center gap-2 mb-1">
+                          <PlanetIcon className="w-3.5 h-3.5" style={{ color: planet.color }} />
+                          <span className="font-cinzel text-[10px] uppercase tracking-widest font-bold" style={{ color: planet.color }}>
+                            {planet.name} — Orbiting Datasets
+                          </span>
+                        </div>
+                        <div className="flex flex-wrap gap-2">
+                          {subItems.map(item => (
+                            <button
+                              key={item.slug}
+                              onClick={() => { useStore.setState({ activeMoon: item.slug }); setViewState(3); setIsSidebarOpen(false); }}
+                              className="flex items-center gap-1.5 px-3 py-1.5 rounded border cursor-pointer transition-all duration-200 font-cormorant text-[11px] tracking-widest uppercase"
                               style={{
-                                color: isSelected ? '#fed7aa' : undefined,
-                                textShadow: isSelected ? `0 0 10px ${planet.color}` : undefined
+                                borderColor: activeMoon === item.slug ? planet.color : `${planet.color}30`,
+                                backgroundColor: activeMoon === item.slug ? `${planet.color}20` : `${planet.color}08`,
+                                color: activeMoon === item.slug ? '#fed7aa' : `${planet.color}b0`,
+                                boxShadow: activeMoon === item.slug ? `0 0 10px ${planet.color}30` : undefined,
                               }}
                             >
-                              {planet.name}
-                            </span>
-                            <span 
-                              className="font-mono text-[8px] uppercase tracking-[0.15em] transition-colors duration-300"
-                              style={{ color: isSelected ? `${planet.color}80` : `${activeColor}40` }}
-                            >
-                              {getPlanetTelemetry(planet.type)}
-                            </span>
-                          </div>
+                              <div className="w-1 h-1 rounded-full" style={{ backgroundColor: activeMoon === item.slug ? '#fed7aa' : `${planet.color}80` }} />
+                              {item.name}
+                            </button>
+                          ))}
                         </div>
-
-                        {/* Nested Sub-navigation (Moons) */}
-                        <AnimatePresence>
-                          {isSelected && subItems.length > 0 && (
-                            <motion.div 
-                              initial={{ opacity: 0, height: 0 }}
-                              animate={{ opacity: 1, height: 'auto' }}
-                              exit={{ opacity: 0, height: 0 }}
-                              className="relative flex flex-col gap-2.5 pl-6 overflow-hidden mb-2 ml-4 border-l pt-1"
-                              style={{ borderColor: `${planet.color}30` }}
-                            >
-                              {subItems.map(item => (
-                                <div 
-                                  key={item.slug}
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    useStore.setState({ activeMoon: item.slug });
-                                    setViewState(3);
-                                  }}
-                                  className="group flex items-center gap-2.5 cursor-pointer py-0.5 relative"
-                                >
-                                  {/* Horizontal connector line */}
-                                  <div className="absolute left-[-24px] w-[16px] h-[1px] transition-colors" style={{ backgroundColor: `${planet.color}30` }} />
-                                  <div 
-                                    className={`w-1.5 h-1.5 rounded-full transition-all duration-300 ${activeMoon === item.slug ? 'scale-125' : 'group-hover:scale-110'}`} 
-                                    style={{ 
-                                      backgroundColor: activeMoon === item.slug ? '#fed7aa' : `${planet.color}60`,
-                                      boxShadow: activeMoon === item.slug ? `0 0 8px ${planet.color}` : undefined
-                                    }}
-                                  />
-                                  <span 
-                                    className="font-cormorant text-[11px] tracking-widest uppercase transition-all duration-300"
-                                    style={{ color: activeMoon === item.slug ? '#fed7aa' : `${planet.color}a0` }}
-                                  >
-                                    {item.name}
-                                  </span>
-                                </div>
-                              ))}
-                            </motion.div>
-                          )}
-                        </AnimatePresence>
                       </div>
-                    )
-                  })}
+                    );
+                  })()}
                 </div>
+
               </div>
-              
-              {/* Bottom Actions */}
-              <div className="px-6 pt-4 mt-3 border-t flex flex-col gap-4" style={{ borderColor: `${activeColor}20` }}>
-                <button 
-                  onClick={() => {
-                    import('../utils/audio').then(m => m.audioManager.toggleMute());
-                  }}
-                  className="flex items-center gap-3 transition-colors cursor-pointer group w-fit"
-                  style={{ color: `${activeColor}a0` }}
-                >
-                  <div className="w-1.5 h-1.5 rounded-full transition-all group-hover:scale-125" style={{ backgroundColor: activeColor }} />
-                  <span className="font-cinzel text-[10px] tracking-widest uppercase hover:text-teal-100 transition-colors">Toggle Audio</span>
-                </button>
-              </div>
+              {/* Bottom border accent */}
+              <div className="h-px w-full" style={{ background: `linear-gradient(to right, transparent, ${activeColor}40, transparent)` }} />
             </motion.div>
           )}
         </AnimatePresence>
@@ -807,15 +778,15 @@ export default function UIOverlay() {
           )}
         </AnimatePresence>
 
-        {/* RIGHT PANEL */}
+        {/* ORBIT PANEL (Previously Right Panel, now on Left) */}
         <AnimatePresence>
           {currentState === 2 && activePlanet && planetConfig && (
             <motion.div
-              initial={{ x: 400, opacity: 0 }}
+              initial={{ x: -400, opacity: 0 }}
               animate={{ x: 0, opacity: 1 }}
-              exit={{ x: 400, opacity: 0 }}
+              exit={{ x: -400, opacity: 0 }}
               transition={{ type: 'spring', damping: 20, stiffness: 100 }}
-              className="w-full max-w-sm ml-auto glass-panel pointer-events-auto rounded-xl p-6 mr-4"
+              className="w-full max-w-sm mr-auto glass-panel pointer-events-auto rounded-xl p-6 ml-4"
             >
               <div className="flex items-center gap-3 mb-4 border-b border-teal-500/10 pb-4">
                 <Compass className={`w-6 h-6 ${theme.icon}`} />
@@ -829,60 +800,84 @@ export default function UIOverlay() {
               </p>
 
               <div>
-                <h4 className="font-cormorant text-xs text-teal-200/40 uppercase tracking-[0.2em] mb-3 text-center">
-                  Orbiting Datasets
-                </h4>
+                <div className="relative overflow-hidden mb-3">
+                  <h4 className="font-cormorant text-xs text-teal-200/40 uppercase tracking-[0.2em] text-center pb-1">
+                    Orbiting Datasets
+                  </h4>
+                  <motion.div
+                    initial={{ x: '-100%' }}
+                    animate={{ x: '100%' }}
+                    transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}
+                    className="absolute bottom-0 left-0 w-full h-[1px]"
+                    style={{ background: `linear-gradient(90deg, transparent, ${activeColor}, transparent)` }}
+                  />
+                </div>
 
                 <div className="flex flex-col gap-2 max-h-[180px] overflow-y-auto custom-scrollbar pr-2">
-                  {activePlanet === 'projects' && projects.map((p) => (
-                    <button
+                  {activePlanet === 'projects' && projects.map((p, i) => (
+                    <motion.button
                       key={p.slug}
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: 0.3 + i * 0.08, duration: 0.4 }}
                       onClick={() => { setViewState(3); useStore.setState({ activeMoon: p.slug }); }}
                       className={`text-left font-cormorant tracking-wide text-sm ${theme.bg} ${theme.bgHover} border ${theme.border} ${theme.borderHover} px-4 py-2.5 rounded text-teal-100/80 ${theme.textHover} transition-all cursor-pointer`}
                     >
                       {p.title}
-                    </button>
+                    </motion.button>
                   ))}
-                  {activePlanet === 'tech_stack' && Array.from(new Set(techStack.map(t => t.category))).map((cat) => (
-                    <button
+                  {activePlanet === 'tech_stack' && Array.from(new Set(techStack.map(t => t.category))).map((cat, i) => (
+                    <motion.button
                       key={cat}
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: 0.3 + i * 0.08, duration: 0.4 }}
                       onClick={() => { setViewState(3); useStore.setState({ activeMoon: cat.toLowerCase() }); }}
                       className={`text-left font-cormorant tracking-wide text-sm ${theme.bg} ${theme.bgHover} border ${theme.border} ${theme.borderHover} px-4 py-2.5 rounded text-teal-100/80 ${theme.textHover} transition-all cursor-pointer`}
                     >
                       {cat} Array
-                    </button>
+                    </motion.button>
                   ))}
-                  {activePlanet === 'academics' && academics.map((a) => (
-                    <button
+                  {activePlanet === 'academics' && academics.map((a, i) => (
+                    <motion.button
                       key={a.id}
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: 0.3 + i * 0.08, duration: 0.4 }}
                       onClick={() => { setViewState(3); useStore.setState({ activeMoon: `acad-${a.id}` }); }}
                       className={`text-left font-cormorant tracking-wide text-sm ${theme.bg} ${theme.bgHover} border ${theme.border} ${theme.borderHover} px-4 py-2.5 rounded text-teal-100/80 ${theme.textHover} transition-all cursor-pointer truncate`}
                     >
                       {a.institution}
-                    </button>
+                    </motion.button>
                   ))}
-                  {activePlanet === 'socials' && socials.map((s) => (
-                    <button
+                  {activePlanet === 'socials' && socials.map((s, i) => (
+                    <motion.button
                       key={s.id}
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: 0.3 + i * 0.08, duration: 0.4 }}
                       onClick={() => { setViewState(3); useStore.setState({ activeMoon: s.platform.toLowerCase() }); }}
                       className={`text-left font-cormorant tracking-wide text-sm ${theme.bg} ${theme.bgHover} border ${theme.border} ${theme.borderHover} px-4 py-2.5 rounded text-teal-100/80 ${theme.textHover} transition-all cursor-pointer`}
                     >
                       {s.platform} Uplink
-                    </button>
+                    </motion.button>
                   ))}
                   {activePlanet === 'resume' && [
                     { label: 'Experience', slug: 'resume-experience' },
                     { label: 'Skills', slug: 'resume-skills' },
                     { label: 'Education', slug: 'resume-education' },
                     { label: 'Certifications', slug: 'resume-certifications' },
-                  ].map((sec) => (
-                    <button
+                  ].map((sec, i) => (
+                    <motion.button
                       key={sec.slug}
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: 0.3 + i * 0.08, duration: 0.4 }}
                       onClick={() => { setViewState(3); useStore.setState({ activeMoon: sec.slug }); }}
                       className={`text-left font-cormorant tracking-wide text-sm ${theme.bg} ${theme.bgHover} border ${theme.border} ${theme.borderHover} px-4 py-2.5 rounded text-teal-100/80 ${theme.textHover} transition-all cursor-pointer`}
                     >
                       {sec.label}
-                    </button>
+                    </motion.button>
                   ))}
                 </div>
               </div>
@@ -906,18 +901,18 @@ export default function UIOverlay() {
               onClick={() => activePlanet && triggerDetailPage(activePlanet)}
               className="relative font-cinzel text-xs uppercase tracking-[0.35em] px-8 py-3.5 rounded-full cursor-pointer transition-all duration-300"
               style={{
-                background: `radial-gradient(circle at top left, ${planetConfig?.color ?? '#a78bfa'}22 0%, rgba(2,8,12,0.92) 100%)`,
-                border: `1px solid ${planetConfig?.color ?? '#a78bfa'}55`,
-                color: planetConfig?.color ?? '#a78bfa',
-                boxShadow: `0 0 24px ${planetConfig?.color ?? '#a78bfa'}30, 0 4px 20px rgba(0,0,0,0.6)`,
+                background: `radial-gradient(circle at top left, ${planetConfig?.color ?? '#ffffff'}22 0%, rgba(2,8,12,0.92) 100%)`,
+                border: `1px solid ${planetConfig?.color ?? '#ffffff'}55`,
+                color: planetConfig?.color ?? '#ffffff',
+                boxShadow: `0 0 24px ${planetConfig?.color ?? '#ffffff'}30, 0 4px 20px rgba(0,0,0,0.6)`,
                 backdropFilter: 'blur(12px)',
               }}
               onMouseEnter={e => {
-                (e.currentTarget as HTMLElement).style.boxShadow = `0 0 50px ${planetConfig?.color ?? '#a78bfa'}70, 0 4px 30px rgba(0,0,0,0.7)`;
+                (e.currentTarget as HTMLElement).style.boxShadow = `0 0 50px ${planetConfig?.color ?? '#ffffff'}70, 0 4px 30px rgba(0,0,0,0.7)`;
                 (e.currentTarget as HTMLElement).style.transform = 'scale(1.06)';
               }}
               onMouseLeave={e => {
-                (e.currentTarget as HTMLElement).style.boxShadow = `0 0 24px ${planetConfig?.color ?? '#a78bfa'}30, 0 4px 20px rgba(0,0,0,0.6)`;
+                (e.currentTarget as HTMLElement).style.boxShadow = `0 0 24px ${planetConfig?.color ?? '#ffffff'}30, 0 4px 20px rgba(0,0,0,0.6)`;
                 (e.currentTarget as HTMLElement).style.transform = 'scale(1)';
               }}
             >
@@ -961,6 +956,19 @@ export default function UIOverlay() {
               }`}
           >
             {currentState === 4 ? 'Exit Free Roam' : 'Free Roam'}
+          </motion.button>
+          
+          <motion.button
+            initial={{ scale: 0.9, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            onClick={togglePerformanceMode}
+            className={`px-5 py-2 rounded-full font-cormorant text-xs uppercase tracking-widest transition-all cursor-pointer border ${
+              performanceMode === 'low'
+                ? 'bg-orange-900/60 text-orange-100 border-orange-400/60 shadow-[0_0_15px_rgba(234,88,12,0.3)]'
+                : 'glass-hud text-teal-100/60 hover:text-teal-50 border-teal-500/10 hover:border-teal-400/40'
+            }`}
+          >
+            VFX: {performanceMode.toUpperCase()}
           </motion.button>
         </div>
 

@@ -43,8 +43,9 @@ export default function CameraController() {
     // --- STATE 0: Void – OrbitControls fully in charge, target gently centers on Sun ---
     if (currentState === 0) {
       if (controlsObj?.target) {
+        const breatheY = Math.sin(time * 0.6) * 1.5; // Idle breathing effect
         controlsObj.target.x = THREE.MathUtils.damp(controlsObj.target.x, 0, 2.0, delta);
-        controlsObj.target.y = THREE.MathUtils.damp(controlsObj.target.y, 0, 2.0, delta);
+        controlsObj.target.y = THREE.MathUtils.damp(controlsObj.target.y, breatheY, 2.0, delta);
         controlsObj.target.z = THREE.MathUtils.damp(controlsObj.target.z, 0, 2.0, delta);
         controlsObj.update();
       }

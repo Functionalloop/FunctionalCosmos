@@ -12,6 +12,9 @@ interface CosmosStore {
   // Blackhole transition state
   isBlackholeTransitioning: boolean;
   pendingDetailPlanet: PlanetType | null;
+
+  // Visual settings
+  performanceMode: 'high' | 'low';
   
   // Data
   projects: Project[];
@@ -34,6 +37,7 @@ interface CosmosStore {
   fetchInitialData: () => Promise<void>;
   triggerDetailPage: (planet: PlanetType) => void;
   clearBlackholeTransition: () => void;
+  togglePerformanceMode: () => void;
 }
 
 export const useStore = create<CosmosStore>((set, get) => ({
@@ -43,6 +47,8 @@ export const useStore = create<CosmosStore>((set, get) => ({
 
   isBlackholeTransitioning: false,
   pendingDetailPlanet: null,
+
+  performanceMode: 'high',
   
   projects: [],
   techStack: [],
@@ -54,6 +60,10 @@ export const useStore = create<CosmosStore>((set, get) => ({
   resumeCertifications: [],
   loading: false,
   error: null,
+
+  togglePerformanceMode: () => {
+    set((state) => ({ performanceMode: state.performanceMode === 'high' ? 'low' : 'high' }));
+  },
 
   setPlanet: (planet) => {
     if (planet === null) {

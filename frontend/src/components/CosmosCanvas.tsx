@@ -1,11 +1,61 @@
 'use client';
 
-import { Canvas } from '@react-three/fiber';
+import { Canvas, useFrame } from '@react-three/fiber';
 import { Stars, OrbitControls } from '@react-three/drei';
+import { EffectComposer, Bloom, ChromaticAberration, Vignette } from '@react-three/postprocessing';
+import * as THREE from 'three';
+import { useRef } from 'react';
 import CameraController from './CameraController';
 import CelestialSystem from './CelestialSystem';
 import { useStore } from '../store/useStore';
 import { PLANETS_CONFIG } from '../utils/celestialData';
+
+function DynamicBackground() {
+  const activePlanet = useStore((state) => state.activePlanet);
+  const color = new THREE.Color(activePlanet ? PLANETS_CONFIG[activePlanet].color : '#0b0907');
+  
+  if (activePlanet) {
+    color.multiplyScalar(0.04); // Tint heavily down
+  }
+
+  useFrame((state, delta) => {
+    state.scene.background = state.scene.background || new THREE.Color('#0b0907');
+    if (state.scene.background instanceof THREE.Color) {
+      state.scene.background.lerp(color, delta * 1.5);
+    }
+  });
+  return null;
+}
+
+function ShootingStar() {
+  const ref = useRef<THREE.Mesh>(null);
+  
+  useFrame((state, delta) => {
+    if (ref.current) {
+      ref.current.position.addScaledVector(ref.current.userData.velocity, delta);
+      ref.current.userData.life -= delta;
+      
+      if (ref.current.userData.life <= 0) {
+        // Respawn
+        ref.current.position.set((Math.random() - 0.5) * 120, 30 + Math.random() * 40, (Math.random() - 0.5) * 120);
+        ref.current.userData.velocity.set((Math.random() - 0.5) * 60, -30 - Math.random() * 40, (Math.random() - 0.5) * 60);
+        ref.current.userData.life = 1 + Math.random() * 1.5;
+        ref.current.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), ref.current.userData.velocity.clone().normalize());
+      }
+      
+      const mat = ref.current.material as THREE.MeshBasicMaterial;
+      const l = ref.current.userData.life;
+      mat.opacity = Math.min(1, l * 3) * Math.min(1, (2.5 - l) * 3) * 0.8;
+    }
+  });
+
+  return (
+    <mesh ref={ref} userData={{ velocity: new THREE.Vector3(), life: 0 }}>
+      <cylinderGeometry args={[0.04, 0.04, 8, 4]} />
+      <meshBasicMaterial color="#ffffff" transparent opacity={0} depthWrite={false} blending={THREE.AdditiveBlending} />
+    </mesh>
+  );
+}
 
 export default function CosmosCanvas() {
   const currentState = useStore((state) => state.currentState);
@@ -31,7 +81,7 @@ export default function CosmosCanvas() {
           }
         }}
       >
-        <color attach="background" args={["#0b0907"]} />
+        <DynamicBackground />
         <ambientLight intensity={0.2} color="#ffedd5" />
 
         {/* The glowing center Sun light (Orange) */}
@@ -68,6 +118,24 @@ export default function CosmosCanvas() {
           speed={0.3}
         />
 
+        {/* Tertiary starfield — dense galactic band */}
+        <group rotation={[Math.PI / 6, Math.PI / 4, 0]}>
+          <Stars
+            radius={80}
+            depth={20}
+            count={3000}
+            factor={1.2}
+            saturation={0.9}
+            fade
+            speed={0.1}
+          />
+        </group>
+
+        {/* Shooting Stars */}
+        <ShootingStar />
+        <ShootingStar />
+        <ShootingStar />
+
         {/* Orbit Lines, Sun, Planets, Moons, and Cosmic Dust */}
         <CelestialSystem />
 
@@ -88,6 +156,14 @@ export default function CosmosCanvas() {
           minDistance={currentState === 3 ? 1.1 * sz : 2.2 * sz}
           makeDefault
         />
+
+        {useStore.getState().performanceMode === 'high' && (
+          <EffectComposer disableNormalPass multisampling={4}>
+            <Bloom luminanceThreshold={0.4} luminanceSmoothing={0.9} intensity={1.5} mipmapBlur />
+            <ChromaticAberration offset={new THREE.Vector2(0.0004, 0.0004)} />
+            <Vignette eskil={false} offset={0.3} darkness={0.5} />
+          </EffectComposer>
+        )}
       </Canvas>
     </div>
   );
