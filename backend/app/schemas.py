@@ -72,3 +72,72 @@ class Social(SocialBase):
 
     class Config:
         from_attributes = True
+
+# --- Resume Schemas ---
+
+class ResumeExperienceBase(BaseModel):
+    role: str
+    company: str
+    period: str
+    description: str
+    tags: str   # Comma-separated
+    order: int = 0
+
+class ResumeExperienceCreate(ResumeExperienceBase):
+    pass
+
+class ResumeExperience(ResumeExperienceBase):
+    id: int
+
+    class Config:
+        from_attributes = True
+
+
+class ResumeSkillBase(BaseModel):
+    name: str
+    category: str
+    level: int = 3
+
+class ResumeSkillCreate(ResumeSkillBase):
+    pass
+
+class ResumeSkill(ResumeSkillBase):
+    id: int
+
+    class Config:
+        from_attributes = True
+
+
+class ResumeEducationBase(BaseModel):
+    degree: str
+    institution: str
+    period: str
+    gpa: Optional[str] = None
+    description: Optional[str] = None
+    order: int = 0
+
+class ResumeEducationCreate(ResumeEducationBase):
+    pass
+
+class ResumeEducation(ResumeEducationBase):
+    id: int
+
+    class Config:
+        from_attributes = True
+
+
+class ResumeCertificationBase(BaseModel):
+    name: str
+    issuer: str
+    year: str
+    badge: Optional[str] = None
+    order: int = 0
+
+class ResumeCertificationCreate(ResumeCertificationBase):
+    pass
+
+class ResumeCertification(ResumeCertificationBase):
+    id: int
+
+    class Config:
+        from_attributes = True

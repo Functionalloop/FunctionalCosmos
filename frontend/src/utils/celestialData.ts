@@ -42,4 +42,12 @@ export const PLANETS_CONFIG: Record<PlanetType, PlanetConfig> = {
     color: '#ea580c', // orange-600 — matches UIOverlay text-orange-600 / glow-bronze
     size: 0.75,
   },
+  resume: {
+    type: 'resume',
+    name: 'Resume',
+    radius: 28,
+    speed: 0.055,
+    color: '#a78bfa', // violet-400 — matches UIOverlay text-violet-400
+    size: 0.9,
+  },
 };

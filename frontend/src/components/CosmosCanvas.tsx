@@ -19,7 +19,9 @@ export default function CosmosCanvas() {
         gl={{ antialias: true, alpha: false }}
         className="w-full h-full"
         onPointerMissed={() => {
-          if (currentState !== 0 && currentState !== 4) {
+          if (currentState === 0) {
+            setViewState(4);
+          } else if (currentState !== 0 && currentState !== 4) {
             setViewState(0);
             setPlanet(null);
           }
@@ -27,39 +29,39 @@ export default function CosmosCanvas() {
       >
         <color attach="background" args={["#0b0907"]} />
         <ambientLight intensity={0.2} color="#ffedd5" />
-        
+
         {/* The glowing center Sun light (Orange) */}
         <pointLight position={[0, 0, 0]} intensity={5.0} color="#ea580c" distance={90} decay={1.5} />
-        
+
         {/* Secondary warm Sun glow for volumetric feel */}
         <pointLight position={[0, 2, 0]} intensity={1.5} color="#d4a017" distance={40} decay={2} />
-        
+
         {/* Gentle directional light for details (Warm tinted) */}
         <directionalLight position={[10, 20, 10]} intensity={0.6} color="#ffedd5" />
-        
+
         {/* Cool rim light from below for cinematic contrast */}
         <directionalLight position={[-8, -15, -5]} intensity={0.15} color="#67e8f9" />
 
         {/* Primary starfield — distant, faint, warm */}
-        <Stars 
-          radius={120} 
-          depth={50} 
-          count={4000} 
-          factor={4} 
-          saturation={0.5} 
-          fade 
-          speed={0.5} 
+        <Stars
+          radius={120}
+          depth={50}
+          count={4000}
+          factor={4}
+          saturation={0.5}
+          fade
+          speed={0.5}
         />
 
         {/* Secondary starfield — closer, smaller, cooler tint */}
-        <Stars 
-          radius={60} 
-          depth={30} 
-          count={1500} 
-          factor={2} 
-          saturation={0.8} 
-          fade 
-          speed={0.3} 
+        <Stars
+          radius={60}
+          depth={30}
+          count={1500}
+          factor={2}
+          saturation={0.8}
+          fade
+          speed={0.3}
         />
 
         {/* Orbit Lines, Sun, Planets, Moons, and Cosmic Dust */}
@@ -76,8 +78,10 @@ export default function CosmosCanvas() {
           enableRotate={true}
           autoRotate={currentState === 0}
           autoRotateSpeed={0.5}
-          maxDistance={currentState === 2 ? 16 : currentState === 3 ? 8 : 90}
-          minDistance={currentState === 3 ? 1.2 : 2}
+
+
+          maxDistance={currentState === 2 ? 16 : currentState === 3 ? 4.0 : 90}
+          minDistance={currentState === 3 ? 1.1 : 2}
           makeDefault
         />
       </Canvas>

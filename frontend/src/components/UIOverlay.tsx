@@ -75,6 +75,16 @@ function getTheme(planet: PlanetType | null) {
       glow: 'glow-cyan',
       icon: 'text-cyan-300'
     };
+    case 'resume': return {
+      text: 'text-violet-400',
+      textHover: 'hover:text-violet-300',
+      border: 'border-violet-500/30',
+      borderHover: 'hover:border-violet-500/50',
+      bg: 'bg-violet-950/20',
+      bgHover: 'hover:bg-violet-900/40',
+      glow: 'glow-teal',
+      icon: 'text-violet-400'
+    };
     default: return {
       text: 'text-teal-400',
       textHover: 'hover:text-teal-300',
@@ -156,6 +166,10 @@ export default function UIOverlay() {
   const techStack = useStore((state) => state.techStack);
   const academics = useStore((state) => state.academics);
   const socials = useStore((state) => state.socials);
+  const resumeExperience = useStore((state) => state.resumeExperience);
+  const resumeSkills = useStore((state) => state.resumeSkills);
+  const resumeEducation = useStore((state) => state.resumeEducation);
+  const resumeCertifications = useStore((state) => state.resumeCertifications);
 
   const planetConfig = activePlanet ? PLANETS_CONFIG[activePlanet] : null;
   const theme = getTheme(activePlanet);
@@ -434,6 +448,126 @@ export default function UIOverlay() {
                     </div>
                   </div>
                 )}
+
+                {activePlanet === 'resume' && (() => {
+                  const moon = activeMoon;
+
+                  // Badge emoji map for certifications
+                  const badgeMap: Record<string, string> = {
+                    cloud: '☁️', atom: '⚛️', shield: '🛡️', docker: '🐳', database: '🗄️',
+                  };
+
+                  if (moon === 'resume-experience') return (
+                    <div>
+                      <h2 className={`font-cinzel text-3xl uppercase tracking-widest mb-1 ${theme.text} ${theme.glow}`}>Experience</h2>
+                      <p className="font-cormorant text-xs uppercase tracking-widest text-violet-200/40 mb-6">Professional Work History</p>
+                      <OrnamentalDivider />
+                      {resumeExperience.length === 0 && (
+                        <p className="font-cormorant text-teal-100/40">Loading experience data...</p>
+                      )}
+                      {resumeExperience.map((exp) => (
+                        <div key={exp.id} className={`mb-6 p-5 ${theme.bg} border ${theme.border} rounded-xl`}>
+                          <div className="flex justify-between items-start gap-2 mb-1">
+                            <h3 className={`font-cinzel text-lg uppercase tracking-wide ${theme.text}`}>{exp.role}</h3>
+                            <span className="font-cormorant text-xs text-violet-200/40 whitespace-nowrap">{exp.period}</span>
+                          </div>
+                          <p className="font-cormorant text-xs text-violet-100/60 mb-3 uppercase tracking-widest">{exp.company}</p>
+                          <p className="font-cormorant text-base text-teal-50/80 leading-relaxed mb-3">{exp.description}</p>
+                          <div className="flex flex-wrap gap-2">
+                            {exp.tags.split(',').map(t => (
+                              <span key={t} className={`font-cormorant text-xs px-3 py-0.5 ${theme.bg} border ${theme.border} ${theme.text} rounded-full`}>{t.trim()}</span>
+                            ))}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  );
+
+                  if (moon === 'resume-skills') {
+                    const categories = Array.from(new Set(resumeSkills.map(s => s.category)));
+                    return (
+                      <div>
+                        <h2 className={`font-cinzel text-3xl uppercase tracking-widest mb-1 ${theme.text} ${theme.glow}`}>Skills</h2>
+                        <p className="font-cormorant text-xs uppercase tracking-widest text-violet-200/40 mb-6">Technical Proficiency Matrix</p>
+                        <OrnamentalDivider />
+                        {resumeSkills.length === 0 && (
+                          <p className="font-cormorant text-teal-100/40">Loading skills data...</p>
+                        )}
+                        {categories.map((cat) => (
+                          <div key={cat} className="mb-6">
+                            <h4 className={`font-cormorant text-sm uppercase tracking-[0.25em] ${theme.text} mb-3`}>{cat}</h4>
+                            <div className="grid grid-cols-1 gap-2">
+                              {resumeSkills.filter(s => s.category === cat).map((sk) => (
+                                <div key={sk.id} className={`flex items-center justify-between p-3 ${theme.bg} border ${theme.border} rounded-lg`}>
+                                  <span className="font-cormorant text-teal-50 text-base">{sk.name}</span>
+                                  <div className="flex gap-1">
+                                    {Array.from({ length: 5 }).map((_, i) => (
+                                      <div key={i} className={`w-2 h-2 rounded-full ${i < sk.level ? 'bg-violet-400' : 'bg-violet-900/40'}`} />
+                                    ))}
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    );
+                  }
+
+                  if (moon === 'resume-education') return (
+                    <div>
+                      <h2 className={`font-cinzel text-3xl uppercase tracking-widest mb-1 ${theme.text} ${theme.glow}`}>Education</h2>
+                      <p className="font-cormorant text-xs uppercase tracking-widest text-violet-200/40 mb-6">Academic Background</p>
+                      <OrnamentalDivider />
+                      {resumeEducation.length === 0 && (
+                        <p className="font-cormorant text-teal-100/40">Loading education data...</p>
+                      )}
+                      {resumeEducation.map((ed) => (
+                        <div key={ed.id} className={`mb-6 p-5 ${theme.bg} border ${theme.border} rounded-xl`}>
+                          <span className={`font-cormorant text-xs uppercase tracking-widest ${theme.text} border ${theme.border} px-3 py-0.5 rounded-full`}>{ed.period}</span>
+                          <h3 className={`font-cinzel text-lg uppercase tracking-wide mt-3 ${theme.text}`}>{ed.institution}</h3>
+                          <p className="font-cormorant text-base text-[#fed7aa] mt-1">{ed.degree}</p>
+                          {ed.gpa && <p className="font-cormorant text-xs text-violet-200/40 uppercase tracking-widest mt-1">GPA / Score: {ed.gpa}</p>}
+                          {ed.description && <p className="font-cormorant text-base text-teal-50/70 mt-3 leading-relaxed">{ed.description}</p>}
+                        </div>
+                      ))}
+                    </div>
+                  );
+
+                  if (moon === 'resume-certifications') return (
+                    <div>
+                      <h2 className={`font-cinzel text-3xl uppercase tracking-widest mb-1 ${theme.text} ${theme.glow}`}>Certifications</h2>
+                      <p className="font-cormorant text-xs uppercase tracking-widest text-violet-200/40 mb-6">Credentials & Achievements</p>
+                      <OrnamentalDivider />
+                      {resumeCertifications.length === 0 && (
+                        <p className="font-cormorant text-teal-100/40">Loading certifications data...</p>
+                      )}
+                      {resumeCertifications.map((cert) => (
+                        <div key={cert.id} className={`flex items-center gap-5 p-4 mb-3 ${theme.bg} border ${theme.border} rounded-xl`}>
+                          <span className="text-3xl">{cert.badge ? (badgeMap[cert.badge] ?? cert.badge) : '🏅'}</span>
+                          <div className="flex-1">
+                            <p className={`font-cinzel text-sm uppercase tracking-wide ${theme.text}`}>{cert.name}</p>
+                            <p className="font-cormorant text-xs text-violet-200/40 uppercase tracking-widest mt-0.5">{cert.issuer}</p>
+                          </div>
+                          <span className={`font-cormorant text-xs ${theme.text} border ${theme.border} px-2 py-0.5 rounded-full`}>{cert.year}</span>
+                        </div>
+                      ))}
+                    </div>
+                  );
+
+                  // Default: overview
+                  return (
+                    <div>
+                      <h2 className={`font-cinzel text-3xl uppercase tracking-widest mb-2 ${theme.text} ${theme.glow}`}>Resume</h2>
+                      <p className="font-cormorant text-sm text-violet-200/50 uppercase tracking-widest mb-6">Select a moon to explore a section</p>
+                      <OrnamentalDivider />
+                      <p className="font-cormorant text-base text-teal-50/70 leading-relaxed">
+                        Full-stack developer with {resumeExperience.length > 0 ? resumeExperience.length + '+' : '3+'} years of experience crafting high-performance web applications, APIs, and immersive 3D experiences.
+                        Skilled across {Array.from(new Set(resumeSkills.map(s => s.category))).length || 3} technology domains.
+                      </p>
+                    </div>
+                  );
+                })()}
               </div>
             </motion.div>
           )}
@@ -500,6 +634,20 @@ export default function UIOverlay() {
                       className={`text-left font-cormorant tracking-wide text-sm ${theme.bg} ${theme.bgHover} border ${theme.border} ${theme.borderHover} px-4 py-2.5 rounded text-teal-100/80 ${theme.textHover} transition-all cursor-pointer`}
                     >
                       {s.platform} Uplink
+                    </button>
+                  ))}
+                  {activePlanet === 'resume' && [
+                    { label: 'Experience', slug: 'resume-experience' },
+                    { label: 'Skills', slug: 'resume-skills' },
+                    { label: 'Education', slug: 'resume-education' },
+                    { label: 'Certifications', slug: 'resume-certifications' },
+                  ].map((sec) => (
+                    <button
+                      key={sec.slug}
+                      onClick={() => { setViewState(3); useStore.setState({ activeMoon: sec.slug }); }}
+                      className={`text-left font-cormorant tracking-wide text-sm ${theme.bg} ${theme.bgHover} border ${theme.border} ${theme.borderHover} px-4 py-2.5 rounded text-teal-100/80 ${theme.textHover} transition-all cursor-pointer`}
+                    >
+                      {sec.label}
                     </button>
                   ))}
                 </div>

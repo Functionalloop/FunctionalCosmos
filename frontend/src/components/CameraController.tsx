@@ -75,24 +75,23 @@ export default function CameraController() {
         pz + 4.5 * Math.sin(time * 0.3)
       );
     } else if (currentState === 3) {
-      // State 3: Horizon view — very close, dramatic low angle on planet
-      targetVec.current.set(px, py + 0.5, pz);
+     
+      targetVec.current.set(px, py + 0.2, pz);
       desiredPosVec.current.set(
-        px + 2.2 * Math.cos(time * 0.08),
-        py + 1.0,
-        pz + 2.2 * Math.sin(time * 0.08)
+        px + 1.5 * Math.cos(time * 0.08),
+        py + 0.5,
+        pz + 1.5 * Math.sin(time * 0.08)
       );
     }
 
-    // Always damp the controls target toward the planet (user can still drag)
+ 
     if (controlsObj?.target) {
       controlsObj.target.x = THREE.MathUtils.damp(controlsObj.target.x, targetVec.current.x, dampFactor, delta);
       controlsObj.target.y = THREE.MathUtils.damp(controlsObj.target.y, targetVec.current.y, dampFactor, delta);
       controlsObj.target.z = THREE.MathUtils.damp(controlsObj.target.z, targetVec.current.z, dampFactor, delta);
     }
 
-    // On initial fly-in: also drive camera position toward the desired framing.
-    // Once close enough, stop overriding position so user can drag freely.
+   
     const distToDest = camera.position.distanceTo(desiredPosVec.current);
     if (!flyInDone.current) {
       camera.position.x = THREE.MathUtils.damp(camera.position.x, desiredPosVec.current.x, dampFactor, delta);

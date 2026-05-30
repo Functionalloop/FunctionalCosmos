@@ -246,6 +246,10 @@ function Planet({ config }: PlanetProps) {
   const techStack = useStore((state) => state.techStack);
   const academics = useStore((state) => state.academics);
   const socials = useStore((state) => state.socials);
+  const resumeExperience = useStore((state) => state.resumeExperience);
+  const resumeSkills = useStore((state) => state.resumeSkills);
+  const resumeEducation = useStore((state) => state.resumeEducation);
+  const resumeCertifications = useStore((state) => state.resumeCertifications);
 
   const isSelected = activePlanet === config.type;
 
@@ -306,8 +310,23 @@ function Planet({ config }: PlanetProps) {
         orbitSpeed: 1.1 - index * 0.15,
       }));
     }
+    if (config.type === 'resume') {
+      // Build moon slugs from live data — each section becomes a moon
+      const sections = [
+        { name: 'Experience', slug: 'resume-experience', available: resumeExperience.length > 0 },
+        { name: 'Skills', slug: 'resume-skills', available: resumeSkills.length > 0 },
+        { name: 'Education', slug: 'resume-education', available: resumeEducation.length > 0 },
+        { name: 'Certifications', slug: 'resume-certifications', available: resumeCertifications.length > 0 },
+      ];
+      return sections.map((sec, index) => ({
+        name: sec.name,
+        slug: sec.slug,
+        orbitRadius: 1.0 + index * 0.32,
+        orbitSpeed: 0.85 - index * 0.12,
+      }));
+    }
     return [];
-  }, [config.type, projects, techStack, academics, socials]);
+  }, [config.type, projects, techStack, academics, socials, resumeExperience, resumeSkills, resumeEducation, resumeCertifications]);
 
   const handlePlanetClick = (e: any) => {
     e.stopPropagation();
@@ -342,6 +361,8 @@ function Planet({ config }: PlanetProps) {
         return { roughness: 0.6, metalness: 0.3 }; // Softer, icy surface
       case 'academics':
         return { roughness: 0.35, metalness: 0.5 }; // Rocky, warm
+      case 'resume':
+        return { roughness: 0.1, metalness: 0.9 }; // Crystal-smooth, gem-like
       default:
         return { roughness: 0.3, metalness: 0.5 };
     }
@@ -540,6 +561,7 @@ export default function CelestialSystem() {
       <Planet config={PLANETS_CONFIG.tech_stack} />
       <Planet config={PLANETS_CONFIG.socials} />
       <Planet config={PLANETS_CONFIG.academics} />
+      <Planet config={PLANETS_CONFIG.resume} />
     </group>
   );
 }

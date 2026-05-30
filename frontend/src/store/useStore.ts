@@ -1,8 +1,8 @@
 import { create } from 'zustand';
-import { api, Project, TechStack, Academic, Social } from '../utils/api';
+import { api, Project, TechStack, Academic, Social, ResumeExperience, ResumeSkill, ResumeEducation, ResumeCertification } from '../utils/api';
 
 export type CosmosState = 0 | 1 | 2 | 3 | 4; // 0: Void, 1: Target Lock, 2: Cinematic Orbit, 3: Horizon View, 4: Free Roam
-export type PlanetType = 'projects' | 'tech_stack' | 'socials' | 'academics';
+export type PlanetType = 'projects' | 'tech_stack' | 'socials' | 'academics' | 'resume';
 
 interface CosmosStore {
   currentState: CosmosState;
@@ -14,6 +14,10 @@ interface CosmosStore {
   techStack: TechStack[];
   academics: Academic[];
   socials: Social[];
+  resumeExperience: ResumeExperience[];
+  resumeSkills: ResumeSkill[];
+  resumeEducation: ResumeEducation[];
+  resumeCertifications: ResumeCertification[];
   loading: boolean;
   error: string | null;
 
@@ -35,6 +39,10 @@ export const useStore = create<CosmosStore>((set, get) => ({
   techStack: [],
   academics: [],
   socials: [],
+  resumeExperience: [],
+  resumeSkills: [],
+  resumeEducation: [],
+  resumeCertifications: [],
   loading: false,
   error: null,
 
@@ -98,13 +106,17 @@ export const useStore = create<CosmosStore>((set, get) => ({
   fetchInitialData: async () => {
     set({ loading: true, error: null });
     try {
-      const [projects, techStack, academics, socials] = await Promise.all([
+      const [projects, techStack, academics, socials, resumeExperience, resumeSkills, resumeEducation, resumeCertifications] = await Promise.all([
         api.getProjects().catch(() => []),
         api.getTechStack().catch(() => []),
         api.getAcademics().catch(() => []),
         api.getSocials().catch(() => []),
+        api.getResumeExperience().catch(() => []),
+        api.getResumeSkills().catch(() => []),
+        api.getResumeEducation().catch(() => []),
+        api.getResumeCertifications().catch(() => []),
       ]);
-      set({ projects, techStack, academics, socials, loading: false });
+      set({ projects, techStack, academics, socials, resumeExperience, resumeSkills, resumeEducation, resumeCertifications, loading: false });
     } catch (err: any) {
       set({ error: err.message || 'Error loading data', loading: false });
     }

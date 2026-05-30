@@ -57,3 +57,20 @@ def read_academics(skip: int = 0, limit: int = 100, db: Session = Depends(get_db
 @app.get("/api/socials", response_model=List[schemas.Social])
 def read_socials(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
     return crud.get_socials(db, skip=skip, limit=limit)
+
+# --- Resume Routes ---
+@app.get("/api/resume/experience", response_model=List[schemas.ResumeExperience])
+def read_resume_experience(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+    return crud.get_resume_experience(db, skip=skip, limit=limit)
+
+@app.get("/api/resume/skills", response_model=List[schemas.ResumeSkill])
+def read_resume_skills(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+    return crud.get_resume_skills(db, skip=skip, limit=limit)
+
+@app.get("/api/resume/education", response_model=List[schemas.ResumeEducation])
+def read_resume_education(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+    return crud.get_resume_education(db, skip=skip, limit=limit)
+
+@app.get("/api/resume/certifications", response_model=List[schemas.ResumeCertification])
+def read_resume_certifications(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+    return crud.get_resume_certifications(db, skip=skip, limit=limit)

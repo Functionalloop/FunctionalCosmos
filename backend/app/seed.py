@@ -114,6 +114,116 @@ def seed_db():
         ]
         db.add_all(socials)
 
+        # 5. Seed Resume — Experience
+        resume_experience = [
+            models.ResumeExperience(
+                role="Full-Stack Developer",
+                company="FunctionalLoop Systems",
+                period="Jan 2024 - Present",
+                description="Architected and deployed scalable microservice backends in FastAPI + PostgreSQL. Built interactive 3D portfolio experiences with Next.js, Three.js, and React Three Fiber. Led a team of 3 engineers through agile sprints.",
+                tags="FastAPI,Next.js,Three.js,PostgreSQL,React Three Fiber",
+                order=0
+            ),
+            models.ResumeExperience(
+                role="Frontend Engineer",
+                company="Nebula Tech Studio",
+                period="Aug 2022 - Dec 2023",
+                description="Led UI/UX redesigns for enterprise SaaS dashboards. Reduced initial load times by 40% via code-splitting, lazy loading, and image optimization strategies. Mentored 2 junior developers in React patterns and TypeScript.",
+                tags="React,TypeScript,Zustand,Vite,Framer Motion",
+                order=1
+            ),
+            models.ResumeExperience(
+                role="Software Engineering Intern",
+                company="QuantumEdge Solutions",
+                period="May 2021 - Jul 2022",
+                description="Built automation pipelines in Python that reduced manual reporting effort by 60%. Contributed to RESTful API integrations with third-party payment providers and developed internal tooling dashboards.",
+                tags="Python,REST APIs,SQLAlchemy,FastAPI,PostgreSQL",
+                order=2
+            ),
+        ]
+        db.add_all(resume_experience)
+
+        # 6. Seed Resume — Skills
+        resume_skills = [
+            # Frontend
+            models.ResumeSkill(name="React / Next.js", category="Frontend", level=5),
+            models.ResumeSkill(name="TypeScript", category="Frontend", level=5),
+            models.ResumeSkill(name="Three.js / R3F", category="Frontend", level=4),
+            models.ResumeSkill(name="Tailwind CSS", category="Frontend", level=5),
+            # Backend
+            models.ResumeSkill(name="FastAPI / Python", category="Backend", level=5),
+            models.ResumeSkill(name="Node.js / Express", category="Backend", level=4),
+            models.ResumeSkill(name="PostgreSQL", category="Backend", level=4),
+            models.ResumeSkill(name="SQLAlchemy", category="Backend", level=4),
+            # DevOps & Tools
+            models.ResumeSkill(name="Docker", category="DevOps & Tools", level=3),
+            models.ResumeSkill(name="Git / GitHub", category="DevOps & Tools", level=5),
+            models.ResumeSkill(name="Linux CLI", category="DevOps & Tools", level=4),
+            models.ResumeSkill(name="Vercel / GCP", category="DevOps & Tools", level=3),
+        ]
+        db.add_all(resume_skills)
+
+        # 7. Seed Resume — Education
+        resume_education = [
+            models.ResumeEducation(
+                degree="B.Tech - Computer Science & Engineering",
+                institution="National Institute of Technology",
+                period="2019 - 2023",
+                gpa="8.7 / 10",
+                description="Specialization in distributed systems and software architecture. Final year thesis on real-time collaborative editing engines using CRDTs. Ranked in top 5% of graduating class.",
+                order=0
+            ),
+            models.ResumeEducation(
+                degree="Higher Secondary - Science (PCM)",
+                institution="Delhi Public School",
+                period="2017 - 2019",
+                gpa="94.4%",
+                description="Distinction in Mathematics, Physics, and Computer Science. Participated in national level programming olympiads.",
+                order=1
+            ),
+        ]
+        db.add_all(resume_education)
+
+        # 8. Seed Resume — Certifications
+        resume_certifications = [
+            models.ResumeCertification(
+                name="Google Cloud Professional Developer",
+                issuer="Google",
+                year="2024",
+                badge="cloud",
+                order=0
+            ),
+            models.ResumeCertification(
+                name="Meta Frontend Developer",
+                issuer="Meta / Coursera",
+                year="2023",
+                badge="atom",
+                order=1
+            ),
+            models.ResumeCertification(
+                name="AWS Solutions Architect - Associate",
+                issuer="Amazon Web Services",
+                year="2023",
+                badge="shield",
+                order=2
+            ),
+            models.ResumeCertification(
+                name="Docker Certified Associate",
+                issuer="Docker Inc.",
+                year="2022",
+                badge="docker",
+                order=3
+            ),
+            models.ResumeCertification(
+                name="PostgreSQL Administration",
+                issuer="EDB / Credly",
+                year="2022",
+                badge="database",
+                order=4
+            ),
+        ]
+        db.add_all(resume_certifications)
+
         db.commit()
         print("Database seeded successfully!")
     except Exception as e:

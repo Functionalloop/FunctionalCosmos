@@ -47,3 +47,16 @@ def create_social(db: Session, social: schemas.SocialCreate):
     db.commit()
     db.refresh(db_social)
     return db_social
+
+# --- Resume CRUD ---
+def get_resume_experience(db: Session, skip: int = 0, limit: int = 100):
+    return db.query(models.ResumeExperience).order_by(models.ResumeExperience.order).offset(skip).limit(limit).all()
+
+def get_resume_skills(db: Session, skip: int = 0, limit: int = 100):
+    return db.query(models.ResumeSkill).offset(skip).limit(limit).all()
+
+def get_resume_education(db: Session, skip: int = 0, limit: int = 100):
+    return db.query(models.ResumeEducation).order_by(models.ResumeEducation.order).offset(skip).limit(limit).all()
+
+def get_resume_certifications(db: Session, skip: int = 0, limit: int = 100):
+    return db.query(models.ResumeCertification).order_by(models.ResumeCertification.order).offset(skip).limit(limit).all()

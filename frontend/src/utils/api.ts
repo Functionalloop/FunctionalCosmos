@@ -38,6 +38,43 @@ export interface Social {
   icon?: string;
 }
 
+// --- Resume Types ---
+export interface ResumeExperience {
+  id: number;
+  role: string;
+  company: string;
+  period: string;
+  description: string;
+  tags: string; // Comma-separated
+  order: number;
+}
+
+export interface ResumeSkill {
+  id: number;
+  name: string;
+  category: string;
+  level: number; // 1-5
+}
+
+export interface ResumeEducation {
+  id: number;
+  degree: string;
+  institution: string;
+  period: string;
+  gpa?: string;
+  description?: string;
+  order: number;
+}
+
+export interface ResumeCertification {
+  id: number;
+  name: string;
+  issuer: string;
+  year: string;
+  badge?: string;
+  order: number;
+}
+
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api';
 
 async function fetchAPI<T>(endpoint: string): Promise<T> {
@@ -54,4 +91,9 @@ export const api = {
   getTechStack: () => fetchAPI<TechStack[]>('/tech-stack'),
   getAcademics: () => fetchAPI<Academic[]>('/academics'),
   getSocials: () => fetchAPI<Social[]>('/socials'),
+  // Resume
+  getResumeExperience: () => fetchAPI<ResumeExperience[]>('/resume/experience'),
+  getResumeSkills: () => fetchAPI<ResumeSkill[]>('/resume/skills'),
+  getResumeEducation: () => fetchAPI<ResumeEducation[]>('/resume/education'),
+  getResumeCertifications: () => fetchAPI<ResumeCertification[]>('/resume/certifications'),
 };
