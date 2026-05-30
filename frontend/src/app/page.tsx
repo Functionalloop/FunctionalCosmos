@@ -4,8 +4,10 @@ import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import CosmosCanvas from '../components/CosmosCanvas';
 import UIOverlay from '../components/UIOverlay';
+import BlackholeTransition from '../components/BlackholeTransition';
 import { useStore } from '../store/useStore';
 import { Compass } from 'lucide-react';
+
 
 export default function Home() {
   const fetchInitialData = useStore((state) => state.fetchInitialData);
@@ -76,6 +78,10 @@ export default function Home() {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Blackhole transition overlay — rendered above everything */}
+      <BlackholeTransition />
     </div>
   );
 }
+

@@ -8,6 +8,10 @@ interface CosmosStore {
   currentState: CosmosState;
   activePlanet: PlanetType | null;
   activeMoon: string | null; // slug or key
+
+  // Blackhole transition state
+  isBlackholeTransitioning: boolean;
+  pendingDetailPlanet: PlanetType | null;
   
   // Data
   projects: Project[];
@@ -28,12 +32,17 @@ interface CosmosStore {
   toggleFreeRoam: () => void;
   goBack: () => void;
   fetchInitialData: () => Promise<void>;
+  triggerDetailPage: (planet: PlanetType) => void;
+  clearBlackholeTransition: () => void;
 }
 
 export const useStore = create<CosmosStore>((set, get) => ({
   currentState: 0,
   activePlanet: null,
   activeMoon: null,
+
+  isBlackholeTransitioning: false,
+  pendingDetailPlanet: null,
   
   projects: [],
   techStack: [],
@@ -103,6 +112,14 @@ export const useStore = create<CosmosStore>((set, get) => ({
     }
   },
 
+  triggerDetailPage: (planet: PlanetType) => {
+    set({ isBlackholeTransitioning: true, pendingDetailPlanet: planet });
+  },
+
+  clearBlackholeTransition: () => {
+    set({ isBlackholeTransitioning: false, pendingDetailPlanet: null });
+  },
+
   fetchInitialData: async () => {
     set({ loading: true, error: null });
     try {
@@ -122,3 +139,4 @@ export const useStore = create<CosmosStore>((set, get) => ({
     }
   },
 }));
+

@@ -161,6 +161,7 @@ export default function UIOverlay() {
   const setViewState = useStore((state) => state.setViewState);
   const setPlanet = useStore((state) => state.setPlanet);
   const toggleFreeRoam = useStore((state) => state.toggleFreeRoam);
+  const triggerDetailPage = useStore((state) => state.triggerDetailPage);
 
   const projects = useStore((state) => state.projects);
   const techStack = useStore((state) => state.techStack);
@@ -657,6 +658,42 @@ export default function UIOverlay() {
         </AnimatePresence>
       </div>
 
+      {/* --- ENTER PLANET CTA — shown in Horizon View (state 3) --- */}
+      <AnimatePresence>
+        {currentState === 3 && activePlanet && (
+          <motion.div
+            key="enter-planet-cta"
+            initial={{ opacity: 0, y: 30, scale: 0.9 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 20, scale: 0.95 }}
+            transition={{ type: 'spring', damping: 20, stiffness: 160, delay: 0.4 }}
+            className="absolute bottom-20 left-1/2 -translate-x-1/2 pointer-events-auto flex flex-col items-center gap-3 z-20"
+          >
+            <button
+              onClick={() => activePlanet && triggerDetailPage(activePlanet)}
+              className="relative font-cinzel text-xs uppercase tracking-[0.35em] px-8 py-3.5 rounded-full cursor-pointer transition-all duration-300"
+              style={{
+                background: `radial-gradient(circle at top left, ${planetConfig?.color ?? '#a78bfa'}22 0%, rgba(2,8,12,0.92) 100%)`,
+                border: `1px solid ${planetConfig?.color ?? '#a78bfa'}55`,
+                color: planetConfig?.color ?? '#a78bfa',
+                boxShadow: `0 0 24px ${planetConfig?.color ?? '#a78bfa'}30, 0 4px 20px rgba(0,0,0,0.6)`,
+                backdropFilter: 'blur(12px)',
+              }}
+              onMouseEnter={e => {
+                (e.currentTarget as HTMLElement).style.boxShadow = `0 0 50px ${planetConfig?.color ?? '#a78bfa'}70, 0 4px 30px rgba(0,0,0,0.7)`;
+                (e.currentTarget as HTMLElement).style.transform = 'scale(1.06)';
+              }}
+              onMouseLeave={e => {
+                (e.currentTarget as HTMLElement).style.boxShadow = `0 0 24px ${planetConfig?.color ?? '#a78bfa'}30, 0 4px 20px rgba(0,0,0,0.6)`;
+                (e.currentTarget as HTMLElement).style.transform = 'scale(1)';
+              }}
+            >
+              ⬤ &nbsp; Enter {planetConfig?.name ?? 'Planet'}
+            </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* --- BOTTOM CONTROLS & NAVIGATION --- */}
       <div className="w-full flex justify-between items-center pointer-events-auto">
         <div className="flex gap-3">
@@ -702,7 +739,7 @@ export default function UIOverlay() {
           {currentState === 0 && 'Target lock: Left Click on any planetary body'}
           {currentState === 1 && 'Hold drag to rotate | Click planet label to enter orbit'}
           {currentState === 2 && 'Select an orbiting moon to initiate surface scan'}
-          {currentState === 3 && 'Use scrollbar to navigate details | pull back to leave horizon'}
+          {currentState === 3 && 'Click ⬤ Enter Planet for the full system view'}
           {currentState === 4 && 'Use mouse to freely pan, zoom, and rotate'}
         </motion.div>
       </div>
