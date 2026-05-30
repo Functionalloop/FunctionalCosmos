@@ -6,6 +6,7 @@ import { Html } from '@react-three/drei';
 import * as THREE from 'three';
 import { useStore, PlanetType } from '../store/useStore';
 import { PLANETS_CONFIG, PlanetConfig } from '../utils/celestialData';
+import { audioManager } from '../utils/audio';
 
 // --- Orbit Path Ring Component (Dashed, animated) ---
 function OrbitLine({ radius, color }: { radius: number; color: string }) {
@@ -178,6 +179,7 @@ function Moon({ name, slug, orbitRadius, orbitSpeed, color, parentPos, onSelect,
   return (
     <mesh ref={meshRef} onClick={(e) => {
       e.stopPropagation();
+      audioManager.playClick();
       onSelect();
     }}>
       {/* Moon Surface */}
@@ -330,6 +332,7 @@ function Planet({ config }: PlanetProps) {
 
   const handlePlanetClick = (e: any) => {
     e.stopPropagation();
+    audioManager.playClick();
     if (!isSelected) {
       setPlanet(config.type);
     } else {

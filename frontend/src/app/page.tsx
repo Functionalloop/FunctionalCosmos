@@ -6,6 +6,7 @@ import { Rocket } from 'lucide-react';
 import CosmosCanvas from '../components/CosmosCanvas';
 import UIOverlay from '../components/UIOverlay';
 import { useStore } from '../store/useStore';
+import { audioManager } from '../utils/audio';
 
 const LOADING_STEPS = [
   "HYPERSPACE LINK ESTABLISHED...",
@@ -118,6 +119,11 @@ export default function Home() {
   const [loadingStep, setLoadingStep] = useState(0);
   const [isDataLoaded, setIsDataLoaded] = useState(false);
 
+  // Initialize audio on first interaction
+  const handleInteraction = () => {
+    audioManager.init();
+  };
+
   useEffect(() => {
     let progressTimer: NodeJS.Timeout;
 
@@ -163,7 +169,11 @@ export default function Home() {
   }, [progress]);
 
   return (
-    <div className="relative w-screen h-screen overflow-hidden bg-[#02080c] text-[#fed7aa] font-cormorant">
+    <div 
+      className="relative w-screen h-screen overflow-hidden bg-[#02080c] text-[#fed7aa] font-cormorant"
+      onClick={handleInteraction}
+      onKeyDown={handleInteraction}
+    >
       <AnimatePresence mode="wait">
         {showIntro ? (
           <motion.div
