@@ -1,7 +1,7 @@
 'use client';
 
 import { motion, AnimatePresence } from 'framer-motion';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   ArrowLeft,
   ExternalLink,
@@ -32,6 +32,8 @@ const GithubIcon = (props: React.SVGProps<SVGSVGElement>) => (
 );
 import { useStore, PlanetType } from '../store/useStore';
 import { PLANETS_CONFIG } from '../utils/celestialData';
+import { api } from '../utils/api';
+import { audioManager } from '../utils/audio';
 
 function getTheme(planet: PlanetType | null) {
   switch (planet) {
@@ -162,9 +164,231 @@ function OrnamentalDivider() {
     </div>
   );
 }
+// ─── Keybinds Panel ─────────────────────────────────────────────────────────────
+function KeybindsPanel({ onClose }: { onClose: () => void }) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: 20 }}
+      className="absolute bottom-24 left-6 z-[200] p-5 rounded-xl pointer-events-auto"
+      style={{
+        background: 'rgba(2, 8, 12, 0.85)',
+        border: '1px solid rgba(254, 215, 170, 0.15)',
+        boxShadow: '0 8px 32px rgba(0, 0, 0, 0.4)',
+        backdropFilter: 'blur(8px)',
+      }}
+    >
+      <div className="flex justify-between items-center mb-4">
+        <h3 className="font-cinzel text-[#fed7aa] text-sm tracking-widest uppercase">Navigation Systems</h3>
+        <button onClick={onClose} className="text-teal-200/50 hover:text-[#fed7aa] transition-colors">
+          <X className="w-4 h-4" />
+        </button>
+      </div>
+      <div className="grid grid-cols-2 gap-x-8 gap-y-2">
+        {[
+          { key: 'P', action: 'Projects' },
+          { key: 'T', action: 'Tech Stack' },
+          { key: 'S', action: 'Socials' },
+          { key: 'A', action: 'Academics' },
+          { key: 'R', action: 'Resume' },
+          { key: 'ESC', action: 'Reset View' },
+          { key: 'SPACE', action: 'Free Roam' },
+          { key: 'M', action: 'Toggle Audio' },
+          { key: '?', action: 'Toggle HUD' },
+        ].map(({ key, action }) => (
+          <div key={key} className="flex items-center justify-between gap-4">
+            <span className="font-cormorant text-teal-100/60 text-xs tracking-wider uppercase">{action}</span>
+            <kbd className="font-mono text-[10px] text-[#fb923c] bg-[#fb923c]/10 px-1.5 py-0.5 rounded border border-[#fb923c]/20">
+              {key}
+            </kbd>
+          </div>
+        ))}
+      </div>
+    </motion.div>
+  );
+}
+
+
+// ─── Sun Profile Modal ────────────────────────────────────────────────────────
+function SunProfileModal({ onClose }: { onClose: () => void }) {
+  return (
+    <AnimatePresence>
+      <motion.div
+        key="sun-profile-backdrop"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        transition={{ duration: 0.35 }}
+        className="fixed inset-0 z-[500] flex items-center justify-center"
+        style={{ background: 'rgba(2,6,12,0.72)', backdropFilter: 'blur(10px)' }}
+        onClick={onClose}
+      >
+        <motion.div
+          key="sun-profile-panel"
+          initial={{ opacity: 0, scale: 0.88, y: 30 }}
+          animate={{ opacity: 1, scale: 1, y: 0 }}
+          exit={{ opacity: 0, scale: 0.9, y: 20 }}
+          transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
+          className="relative max-w-xl w-full mx-4 overflow-hidden rounded-2xl"
+          style={{
+            background: 'linear-gradient(135deg, rgba(12,18,30,0.97) 0%, rgba(20,10,6,0.97) 100%)',
+            border: '1px solid rgba(254,215,170,0.18)',
+            boxShadow: '0 0 60px rgba(251,146,60,0.12), 0 0 120px rgba(251,146,60,0.06), inset 0 1px 0 rgba(254,215,170,0.12)',
+          }}
+          onClick={(e) => e.stopPropagation()}
+        >
+          {/* Radial amber glow behind header */}
+          <div
+            style={{
+              position: 'absolute', top: 0, left: 0, right: 0, height: '220px',
+              background: 'radial-gradient(ellipse 80% 60% at 50% 0%, rgba(251,146,60,0.18) 0%, transparent 75%)',
+              pointerEvents: 'none',
+            }}
+          />
+
+          {/* Close button */}
+          <button
+            onClick={onClose}
+            className="absolute top-4 right-4 z-10 flex items-center justify-center w-8 h-8 rounded-full transition-all duration-200"
+            style={{
+              background: 'rgba(254,215,170,0.08)',
+              border: '1px solid rgba(254,215,170,0.2)',
+              color: '#fed7aa',
+            }}
+          >
+            <X className="w-3.5 h-3.5" />
+          </button>
+
+          {/* Header */}
+          <div className="px-8 pt-8 pb-5 flex flex-col items-center text-center">
+            {/* Sun avatar / avatar ring */}
+            <div className="relative mb-5">
+              <div
+                className="w-20 h-20 rounded-full flex items-center justify-center text-3xl select-none"
+                style={{
+                  background: 'radial-gradient(circle at 38% 35%, #fff7c0 0%, #fb923c 55%, #ea580c 100%)',
+                  boxShadow: '0 0 24px rgba(251,146,60,0.6), 0 0 60px rgba(251,146,60,0.2)',
+                  animation: 'sunPulse 3s ease-in-out infinite',
+                }}
+              >
+                ☀
+              </div>
+              {/* Orbit ring decoration */}
+              <div
+                className="absolute inset-0 rounded-full"
+                style={{
+                  margin: '-10px',
+                  border: '1px dashed rgba(251,146,60,0.35)',
+                  animation: 'spin 12s linear infinite',
+                }}
+              />
+            </div>
+
+            <h2
+              className="font-cinzel uppercase tracking-[0.28em] m-0 leading-none"
+              style={{
+                fontSize: '1.5rem',
+                background: 'linear-gradient(135deg, #fed7aa, #fb923c)',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+                backgroundClip: 'text',
+                textShadow: 'none',
+              }}
+            >
+              Tanishq
+            </h2>
+            <p className="font-cormorant text-[0.72rem] tracking-[0.38em] uppercase text-amber-200/40 mt-1 mb-0">
+              Systems Architect &amp; Full-Stack Developer
+            </p>
+          </div>
+
+          {/* Ornamental divider */}
+          <div className="flex items-center gap-2 px-8 mb-5">
+            <div style={{ flex: 1, height: '1px', background: 'linear-gradient(to right, transparent, rgba(254,215,170,0.25))' }} />
+            <div style={{ width: '4px', height: '4px', borderRadius: '50%', background: 'rgba(254,215,170,0.5)' }} />
+            <div style={{ flex: 1, height: '1px', background: 'linear-gradient(to left, transparent, rgba(254,215,170,0.25))' }} />
+          </div>
+
+          {/* Summary body */}
+          <div className="px-8 pb-8 space-y-4">
+            <p className="font-cormorant text-base leading-relaxed" style={{ color: 'rgba(254,230,190,0.8)' }}>
+              I build systems that matter — from high-concurrency backend APIs to immersive 3D interfaces.
+              My craft sits at the intersection of <span style={{ color: '#fb923c' }}>engineering precision</span> and{' '}
+              <span style={{ color: '#fbbf24' }}>design intuition</span>.
+            </p>
+            <p className="font-cormorant text-base leading-relaxed" style={{ color: 'rgba(254,230,190,0.65)' }}>
+              Currently architecting scalable microservices and real-time collaborative tools at
+              {' '}<span style={{ color: '#fed7aa', fontWeight: 600 }}>FunctionalLoop Systems</span>.
+              B.Tech in Computer Science from NIT, specialising in distributed systems and computer graphics.
+            </p>
+
+            {/* Highlights row */}
+            <div className="grid grid-cols-3 gap-3 pt-2">
+              {[
+                { label: 'Experience', value: '4+ yrs' },
+                { label: 'Projects', value: '10+' },
+                { label: 'GPA', value: '8.7 / 10' },
+              ].map(({ label, value }) => (
+                <div
+                  key={label}
+                  className="flex flex-col items-center gap-1 rounded-xl py-3"
+                  style={{
+                    background: 'rgba(254,215,170,0.04)',
+                    border: '1px solid rgba(254,215,170,0.1)',
+                  }}
+                >
+                  <span
+                    className="font-cinzel text-base"
+                    style={{ color: '#fb923c' }}
+                  >
+                    {value}
+                  </span>
+                  <span className="font-cormorant text-[0.65rem] uppercase tracking-widest" style={{ color: 'rgba(254,215,170,0.4)' }}>
+                    {label}
+                  </span>
+                </div>
+              ))}
+            </div>
+
+            {/* Tags */}
+            <div className="flex flex-wrap gap-2 pt-1">
+              {['FastAPI', 'Next.js', 'Three.js', 'PostgreSQL', 'Docker', 'Go', 'TypeScript'].map((tag) => (
+                <span
+                  key={tag}
+                  className="font-cormorant text-[0.68rem] uppercase tracking-widest px-3 py-1 rounded-full"
+                  style={{
+                    background: 'rgba(251,146,60,0.08)',
+                    border: '1px solid rgba(251,146,60,0.2)',
+                    color: 'rgba(254,215,170,0.7)',
+                  }}
+                >
+                  {tag}
+                </span>
+              ))}
+            </div>
+
+            {/* Hint to explore */}
+            <p
+              className="font-cormorant text-[0.68rem] uppercase tracking-[0.3em] text-center pt-2 animate-pulse"
+              style={{ color: 'rgba(254,215,170,0.25)' }}
+            >
+              Click any orbiting planet to explore further
+            </p>
+          </div>
+        </motion.div>
+      </motion.div>
+    </AnimatePresence>
+  );
+}
 
 export default function UIOverlay() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [showKeybinds, setShowKeybinds] = useState(false);
+  const [showCopyToast, setShowCopyToast] = useState(false);
+  const [visitorCount, setVisitorCount] = useState<number | null>(null);
+  const [isMuted, setIsMuted] = useState(false);
+  const [audioStarted, setAudioStarted] = useState(false);
   const currentState = useStore((state) => state.currentState);
   const activePlanet = useStore((state) => state.activePlanet);
   const activeMoon = useStore((state) => state.activeMoon);
@@ -175,6 +399,69 @@ export default function UIOverlay() {
   const triggerDetailPage = useStore((state) => state.triggerDetailPage);
   const performanceMode = useStore((state) => state.performanceMode);
   const togglePerformanceMode = useStore((state) => state.togglePerformanceMode);
+  const showSunProfile = useStore((state) => state.showSunProfile);
+  const setShowSunProfile = useStore((state) => state.setShowSunProfile);
+
+  const isBlackholeTransitioning = useStore((state) => state.isBlackholeTransitioning);
+
+  const handleToggleMute = () => {
+    const nowMuted = audioManager.toggleMute();
+    setIsMuted(nowMuted);
+  };
+
+  useEffect(() => {
+    // Ping visitor counter on mount
+    api.pingVisitor().then((res) => {
+      setVisitorCount(res.count);
+    }).catch(console.error);
+
+    // Init audio on first click anywhere
+    const handleFirstInteraction = () => {
+      if (!audioStarted) {
+        audioManager.init().then(() => setAudioStarted(true));
+        document.removeEventListener('click', handleFirstInteraction);
+        document.removeEventListener('keydown', handleFirstInteraction as any);
+      }
+    };
+    document.addEventListener('click', handleFirstInteraction, { once: true });
+    document.addEventListener('keydown', handleFirstInteraction as any, { once: true });
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
+      
+      switch (e.key.toLowerCase()) {
+        case 'p': setPlanet('projects'); break;
+        case 't': setPlanet('tech_stack'); break;
+        case 's': setPlanet('socials'); break;
+        case 'a': setPlanet('academics'); break;
+        case 'r': setPlanet('resume'); break;
+        case 'escape': setViewState(0); break;
+        case ' ':
+          e.preventDefault();
+          toggleFreeRoam();
+          break;
+        case '?':
+        case 'h':
+          setShowKeybinds((prev) => !prev);
+          break;
+        case 'm':
+          handleToggleMute();
+          break;
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [setPlanet, setViewState, toggleFreeRoam, audioStarted]);
+
+  // Trigger whoosh SFX when blackhole transition fires
+  useEffect(() => {
+    if (isBlackholeTransitioning) {
+      audioManager.playBlackholeWhoosh();
+    }
+  }, [isBlackholeTransitioning]);
 
   const projects = useStore((state) => state.projects);
   const techStack = useStore((state) => state.techStack);
@@ -200,6 +487,7 @@ export default function UIOverlay() {
   };
 
   return (
+    <>
     <div className="absolute inset-0 z-10 pointer-events-none flex flex-col justify-between p-6 select-none">
 
       {/* --- TOP HUD BAR (status badge, offset below nav bar) --- */}
@@ -376,12 +664,21 @@ export default function UIOverlay() {
               COORD: {activePlanet ? `${PLANETS_CONFIG[activePlanet].radius}.00 AU` : '0.00 AU'}
             </span>
             <button
-              onClick={() => { import('../utils/audio').then(m => m.audioManager.toggleMute()); }}
+              onClick={handleToggleMute}
               className="flex items-center gap-1.5 cursor-pointer group"
-              style={{ color: `${activeColor}70` }}
+              style={{ color: isMuted ? `${activeColor}35` : `${activeColor}90` }}
+              title={isMuted ? 'Unmute (M)' : 'Mute (M)'}
             >
-              <div className="w-1.5 h-1.5 rounded-full group-hover:scale-125 transition-all" style={{ backgroundColor: activeColor }} />
-              <span className="font-cinzel text-[8px] tracking-widest uppercase group-hover:text-white transition-colors">Audio</span>
+              <div
+                className="w-1.5 h-1.5 rounded-full group-hover:scale-125 transition-all"
+                style={{
+                  backgroundColor: isMuted ? `${activeColor}40` : activeColor,
+                  boxShadow: isMuted ? 'none' : `0 0 6px ${activeColor}80`,
+                }}
+              />
+              <span className="font-cinzel text-[8px] tracking-widest uppercase group-hover:text-white transition-colors">
+                {isMuted ? 'MUTED' : 'AUDIO'}
+              </span>
             </button>
             {/* Toggle expand for dropdown sub-nav */}
             <button
@@ -471,11 +768,35 @@ export default function UIOverlay() {
 
                     return (
                       <div className="flex flex-col gap-2">
-                        <div className="flex items-center gap-2 mb-1">
-                          <PlanetIcon className="w-3.5 h-3.5" style={{ color: planet.color }} />
-                          <span className="font-cinzel text-[10px] uppercase tracking-widest font-bold" style={{ color: planet.color }}>
-                            {planet.name} — Orbiting Datasets
-                          </span>
+                        <div className="flex items-center justify-between mb-1">
+                          <div className="flex items-center gap-2">
+                            <PlanetIcon className="w-3.5 h-3.5" style={{ color: planet.color }} />
+                            <span className="font-cinzel text-[10px] uppercase tracking-widest font-bold" style={{ color: planet.color }}>
+                              {planet.name} — Orbiting Datasets
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            {activePlanet === 'resume' && (
+                              <a
+                                href="/assets/resume/tanishq_resume.pdf"
+                                download="Tanishq_Resume.pdf"
+                                className="flex items-center gap-1.5 px-2.5 py-1 rounded border border-[#a78bfa]/40 text-[#a78bfa]/80 hover:text-[#a78bfa] hover:bg-[#a78bfa]/10 transition-all font-cormorant text-[10px] uppercase tracking-widest shadow-[0_0_10px_rgba(167,139,250,0.15)]"
+                              >
+                                <span className="animate-pulse">↓</span> Eject PDF
+                              </a>
+                            )}
+                            <button 
+                              onClick={() => {
+                                navigator.clipboard.writeText(`${window.location.origin}/cosmos/${activePlanet}`);
+                                setShowCopyToast(true);
+                                setTimeout(() => setShowCopyToast(false), 2000);
+                              }}
+                              className="flex items-center gap-1.5 px-2.5 py-1 rounded border border-teal-500/20 text-teal-200/60 hover:text-teal-100 hover:bg-teal-500/10 transition-all font-cormorant text-[10px] uppercase tracking-widest"
+                            >
+                              <Share2 className="w-3 h-3" />
+                              {showCopyToast ? 'Copied URL!' : 'Share Planet'}
+                            </button>
+                          </div>
                         </div>
                         <div className="flex flex-wrap gap-2">
                           {subItems.map(item => (
@@ -922,6 +1243,34 @@ export default function UIOverlay() {
         )}
       </AnimatePresence>
 
+      {/* --- BOTTOM HUD BAR --- */}
+      <div className="w-full flex justify-between items-end pointer-events-auto mb-2">
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="font-cormorant text-[11px] text-teal-200/50 uppercase tracking-[0.2em] flex items-center gap-2"
+        >
+          <span>✦ {visitorCount !== null ? `${visitorCount.toLocaleString()} explorers have mapped this system` : 'Establishing connection...'}</span>
+        </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="font-cormorant text-[10px] text-teal-200/30 uppercase tracking-[0.25em] text-right"
+        >
+          Press '?' for Keyboard Shortcuts <br/>
+          {currentState === 0 && 'Target lock: Left Click on any planetary body'}
+          {currentState === 1 && 'Hold drag to rotate | Click planet label to enter orbit'}
+          {currentState === 2 && 'Select an orbiting moon to initiate surface scan'}
+          {currentState === 3 && 'Click ⬤ Enter Planet for the full system view'}
+          {currentState === 4 && 'Use mouse to freely pan, zoom, and rotate'}
+        </motion.div>
+      </div>
+
+      <AnimatePresence>
+        {showKeybinds && <KeybindsPanel onClose={() => setShowKeybinds(false)} />}
+      </AnimatePresence>
+
       {/* --- BOTTOM CONTROLS & NAVIGATION --- */}
       <div className="w-full flex justify-between items-center pointer-events-auto">
         <div className="flex gap-3">
@@ -977,6 +1326,7 @@ export default function UIOverlay() {
           animate={{ opacity: 1 }}
           className="font-cormorant text-[10px] text-teal-200/30 uppercase tracking-[0.25em] text-right"
         >
+          Press '?' for Keyboard Shortcuts <br/>
           {currentState === 0 && 'Target lock: Left Click on any planetary body'}
           {currentState === 1 && 'Hold drag to rotate | Click planet label to enter orbit'}
           {currentState === 2 && 'Select an orbiting moon to initiate surface scan'}
@@ -985,6 +1335,14 @@ export default function UIOverlay() {
         </motion.div>
       </div>
 
+      <AnimatePresence>
+        {showKeybinds && <KeybindsPanel onClose={() => setShowKeybinds(false)} />}
+      </AnimatePresence>
+
     </div>
+
+    {/* Sun Profile Modal — rendered above the 3D canvas */}
+    {showSunProfile && <SunProfileModal onClose={() => setShowSunProfile(false)} />}
+    </>
   );
 }

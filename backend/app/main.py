@@ -31,6 +31,17 @@ def startup_event():
 def health_check():
     return {"status": "healthy"}
 
+# --- Visitors Routes ---
+@app.get("/api/visitors")
+def read_visitors(db: Session = Depends(get_db)):
+    count = crud.get_visitor_count(db)
+    return {"count": count}
+
+@app.post("/api/visitors/ping")
+def ping_visitor(db: Session = Depends(get_db)):
+    count = crud.increment_visitor(db)
+    return {"count": count}
+
 # --- Projects Routes ---
 @app.get("/api/projects", response_model=List[schemas.Project])
 def read_projects(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):

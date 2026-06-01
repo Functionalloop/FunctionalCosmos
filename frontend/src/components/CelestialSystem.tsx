@@ -41,7 +41,7 @@ function OrbitLine({ radius, color }: { radius: number; color: string }) {
   useFrame((state, delta) => {
     if (lineRef.current) {
       const material = lineRef.current.material as THREE.LineDashedMaterial;
-      material.dashOffset -= delta * 0.4;
+      (material as any).dashOffset -= delta * 0.4;
     }
   });
 
@@ -98,6 +98,7 @@ function SolarWind() {
   return (
     <points ref={pointsRef}>
       <bufferGeometry>
+        {/* @ts-expect-error - args not strictly required when array and count are provided */}
         <bufferAttribute
           attach="attributes-position"
           count={count}
@@ -121,6 +122,9 @@ function Sun() {
   const prominence1Ref = useRef<THREE.Mesh>(null);
   const prominence2Ref = useRef<THREE.Mesh>(null);
   const prominence3Ref = useRef<THREE.Mesh>(null);
+  const [hovered, setHovered] = useState(false);
+  const setShowSunProfile = useStore((s) => s.setShowSunProfile);
+  const setIsCursorActive = useStore((s) => s.setIsCursorActive);
 
   // Procedural animated sun surface shader
   const sunMaterial = useMemo(() => {
@@ -271,11 +275,43 @@ function Sun() {
       {/* Ambient point light from the sun */}
       <pointLight color="#ffedd5" intensity={3.5} distance={120} decay={1.8} />
 
-      {/* Inner Core — Procedural animated surface */}
-      <mesh ref={coreRef}>
+      {/* Inner Core — Procedural animated surface (clickable) */}
+      <mesh
+        ref={coreRef}
+        onClick={(e) => {
+          e.stopPropagation();
+          audioManager.playClick();
+          setShowSunProfile(true);
+        }}
+        onPointerOver={() => { setHovered(true); setIsCursorActive(true); }}
+        onPointerOut={() => { setHovered(false); setIsCursorActive(false); }}
+      >
         <sphereGeometry args={[3.75, 128, 128]} />
         <primitive object={sunMaterial} attach="material" />
       </mesh>
+
+      {/* Hover hint label above the Sun */}
+      {hovered && (
+        <Html distanceFactor={12} position={[0, 5.5, 0]} center zIndexRange={[100, 0]}>
+          <div
+            style={{
+              padding: '4px 12px',
+              background: 'rgba(2,8,12,0.85)',
+              border: '1px solid rgba(254,215,170,0.35)',
+              borderRadius: '6px',
+              color: '#fed7aa',
+              fontSize: '11px',
+              fontFamily: 'Cormorant Garamond, serif',
+              letterSpacing: '0.18em',
+              textTransform: 'uppercase',
+              whiteSpace: 'nowrap',
+              pointerEvents: 'none',
+            }}
+          >
+            ✦ About Me
+          </div>
+        </Html>
+      )}
 
       {/* Chromosphere — thin hot shell just outside core */}
       <mesh ref={chromoRef}>
@@ -360,7 +396,7 @@ function Sun() {
 
       {/* Outer vast halo — very faint, large breathing glow */}
       <mesh ref={glowRef}>
-        <sphereGeometry args={[9.5, 16, 16]} />
+        <sphereGeometry args={[8.5, 16, 16]} />
         <meshBasicMaterial
           color="#fff7ed"
           transparent
@@ -392,6 +428,8 @@ interface MoonProps {
 function Moon({ name, slug, orbitRadius, orbitSpeed, color, parentPos, onSelect, isActive, planetSize }: MoonProps) {
   const meshRef = useRef<THREE.Mesh>(null);
   const glowRef = useRef<THREE.Mesh>(null);
+  const setIsCursorActive = useStore((state) => state.setIsCursorActive);
+  const moonHoverCooldown = useRef(false);
 
   useFrame((state) => {
     if (meshRef.current) {
@@ -421,11 +459,23 @@ function Moon({ name, slug, orbitRadius, orbitSpeed, color, parentPos, onSelect,
         stride={0}
         interval={1}
       >
-        <mesh ref={meshRef} onClick={(e) => {
-          e.stopPropagation();
-          audioManager.playClick();
-          onSelect();
-        }}>
+        <mesh 
+          ref={meshRef} 
+          onClick={(e) => {
+            e.stopPropagation();
+            audioManager.playClick();
+            onSelect();
+          }}
+          onPointerOver={() => {
+            if (!moonHoverCooldown.current) {
+              audioManager.playHover();
+              moonHoverCooldown.current = true;
+              setTimeout(() => { moonHoverCooldown.current = false; }, 600);
+            }
+            setIsCursorActive(true);
+          }}
+          onPointerOut={() => setIsCursorActive(false)}
+        >
           <sphereGeometry args={[0.18 * Math.max(1, planetSize * 0.6), 24, 24]} />
           <meshStandardMaterial 
             color={isActive ? "#ffffff" : color} 
@@ -700,6 +750,7 @@ function Planet({ config }: PlanetProps) {
   const atmosphereRef = useRef<THREE.Mesh>(null);
   const atmosphere2Ref = useRef<THREE.Mesh>(null);
   const ringRef = useRef<THREE.Group>(null);
+  const hoverCooldown = useRef(false);
   
   const [isHovered, setIsHovered] = useState(false);
   const [shockwaves, setShockwaves] = useState<{ id: number }[]>([]);
@@ -710,6 +761,7 @@ function Planet({ config }: PlanetProps) {
   const setPlanet = useStore((state) => state.setPlanet);
   const selectMoon = useStore((state) => state.selectMoon);
   const setViewState = useStore((state) => state.setViewState);
+  const setIsCursorActive = useStore((state) => state.setIsCursorActive);
 
   const projects = useStore((state) => state.projects);
   const techStack = useStore((state) => state.techStack);
@@ -723,6 +775,11 @@ function Planet({ config }: PlanetProps) {
   const isSelected = activePlanet === config.type;
   const planetMaterial = usePlanetMaterial(config.type, config.color);
   const fresnelMaterial = useFresnelMaterial(config.color);
+
+  // Register 3D positional audio for this planet on mount
+  useEffect(() => {
+    audioManager.createPlanetAudio(config.type);
+  }, [config.type]);
 
   // Imperatively assign material to ensure shader is applied on all planets
   useEffect(() => {
@@ -750,6 +807,9 @@ function Planet({ config }: PlanetProps) {
       const pz = config.radius * Math.sin(theta);
       meshRef.current.position.set(px, 0, pz);
       meshRef.current.rotation.y = time * 0.3;
+
+      // ── Update 3D audio panner position to match planet world position ──
+      audioManager.updatePlanetPosition(config.type, px, 0, pz);
     }
     if (atmosphereRef.current) {
       const mat = atmosphereRef.current.material as THREE.ShaderMaterial;
@@ -827,9 +887,11 @@ function Planet({ config }: PlanetProps) {
   const handlePlanetClick = (e: any) => {
     e.stopPropagation();
     audioManager.playClick();
+    audioManager.playPlanetSelect(config.type);
     setShockwaves(prev => [...prev, { id: Date.now() }]);
     if (!isSelected) {
       setPlanet(config.type);
+      audioManager.focusPlanet(config.type);
     } else {
       if (currentState === 1) setViewState(2);
       else if (currentState === 2) setViewState(3);
@@ -851,8 +913,16 @@ function Planet({ config }: PlanetProps) {
       <mesh 
         ref={meshRef} 
         onClick={handlePlanetClick} 
-        onPointerOver={() => setIsHovered(true)}
-        onPointerOut={() => setIsHovered(false)}
+        onPointerOver={() => {
+          if (!hoverCooldown.current) {
+            audioManager.playHover();
+            hoverCooldown.current = true;
+            setTimeout(() => { hoverCooldown.current = false; }, 500);
+          }
+          setIsHovered(true);
+          setIsCursorActive(true);
+        }}
+        onPointerOut={() => { setIsHovered(false); setIsCursorActive(false); }}
         material={planetMaterial}
       >
         {/* Planet geometry */}
@@ -1011,14 +1081,14 @@ function AsteroidBelt() {
     if (!meshRef.current) return;
     
     for (let i = 0; i < count; i++) {
-      // Create a wide debris ring between radius 23 and 29 (between TechStack and Socials)
-      const radius = 23 + Math.random() * 6; 
+      // Create a debris ring between radius 28.5 and 31.5 (strictly in between TechStack (25) and Socials (35))
+      const radius = 28.5 + Math.random() * 3.0; 
       const theta = Math.random() * Math.PI * 2;
-      const y = (Math.random() - 0.5) * 1.5;
+      const y = (Math.random() - 0.5) * 1.0; // Flatter disk
       
       dummy.position.set(radius * Math.cos(theta), y, radius * Math.sin(theta));
       dummy.rotation.set(Math.random() * Math.PI, Math.random() * Math.PI, Math.random() * Math.PI);
-      const scale = Math.random() * 0.12 + 0.03; // Tiny to medium debris
+      const scale = Math.random() * 0.10 + 0.03; // Tiny to medium debris
       dummy.scale.set(scale, scale, scale);
       dummy.updateMatrix();
       

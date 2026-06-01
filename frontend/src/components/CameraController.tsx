@@ -5,6 +5,7 @@ import { useRef } from 'react';
 import * as THREE from 'three';
 import { useStore } from '../store/useStore';
 import { PLANETS_CONFIG } from '../utils/celestialData';
+import { audioManager } from '../utils/audio';
 
 export default function CameraController() {
   const { camera, controls } = useThree();
@@ -14,6 +15,10 @@ export default function CameraController() {
   // Track whether we've done the initial fly-in for each state transition
   const lastState = useRef<number>(-1);
   const flyInDone = useRef(false);
+
+  // Audio listener helpers
+  const listenerForward = useRef(new THREE.Vector3());
+  const listenerUp = useRef(new THREE.Vector3());
 
   // Vector pools
   const targetVec = useRef(new THREE.Vector3());
@@ -34,10 +39,22 @@ export default function CameraController() {
       pz = config.radius * Math.sin(theta);
     }
 
-    // Detect state change → reset fly-in
+    // Detect state change → reset fly-in + update spatial audio state
     if (lastState.current !== currentState) {
       lastState.current = currentState;
       flyInDone.current = false;
+      audioManager.setCosmosState(currentState as any);
+    }
+
+    // ── Update 3D AudioListener position every frame ──────────────────────
+    if (audioManager.isReady()) {
+      listenerForward.current.set(0, 0, -1).applyQuaternion(camera.quaternion);
+      listenerUp.current.set(0, 1, 0).applyQuaternion(camera.quaternion);
+      audioManager.updateListenerPosition(
+        camera.position.x, camera.position.y, camera.position.z,
+        listenerForward.current.x, listenerForward.current.y, listenerForward.current.z,
+        listenerUp.current.x, listenerUp.current.y, listenerUp.current.z
+      );
     }
 
     // --- STATE 0: Void – OrbitControls fully in charge, target gently centers on Sun ---
@@ -78,11 +95,21 @@ export default function CameraController() {
         pz + 4.5 * sz * Math.sin(time * 0.3)
       );
     } else if (currentState === 3) {
-      targetVec.current.set(px, py + 0.2 * sz, pz);
+      // Shift target to the left relative to the camera to keep the planet on the right
+      const camDir = new THREE.Vector3(camera.position.x - px, 0, camera.position.z - pz).normalize();
+      const leftVec = camDir.cross(new THREE.Vector3(0, 1, 0));
+      const shift = 1.0 * sz; 
+      
+      targetVec.current.set(
+        px + leftVec.x * shift, 
+        py + 0.1 * sz, 
+        pz + leftVec.z * shift
+      );
+      
       desiredPosVec.current.set(
-        px + 2.0 * sz * Math.cos(time * 0.08),
+        px + 2.2 * sz * Math.cos(time * 0.08),
         py + 1.2 * sz,
-        pz + 2.0 * sz * Math.sin(time * 0.08)
+        pz + 2.2 * sz * Math.sin(time * 0.08)
       );
     }
 

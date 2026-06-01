@@ -38,6 +38,10 @@ interface CosmosStore {
   triggerDetailPage: (planet: PlanetType) => void;
   clearBlackholeTransition: () => void;
   togglePerformanceMode: () => void;
+  showSunProfile: boolean;
+  setShowSunProfile: (show: boolean) => void;
+  isCursorActive: boolean;
+  setIsCursorActive: (active: boolean) => void;
 }
 
 export const useStore = create<CosmosStore>((set, get) => ({
@@ -64,6 +68,12 @@ export const useStore = create<CosmosStore>((set, get) => ({
   togglePerformanceMode: () => {
     set((state) => ({ performanceMode: state.performanceMode === 'high' ? 'low' : 'high' }));
   },
+
+  showSunProfile: false,
+  setShowSunProfile: (show) => set({ showSunProfile: show }),
+
+  isCursorActive: false,
+  setIsCursorActive: (active) => set({ isCursorActive: active }),
 
   setPlanet: (planet) => {
     if (planet === null) {

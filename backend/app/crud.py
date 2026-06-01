@@ -60,3 +60,23 @@ def get_resume_education(db: Session, skip: int = 0, limit: int = 100):
 
 def get_resume_certifications(db: Session, skip: int = 0, limit: int = 100):
     return db.query(models.ResumeCertification).order_by(models.ResumeCertification.order).offset(skip).limit(limit).all()
+
+def get_visitor_count(db: Session):
+    visitor = db.query(models.VisitorCount).filter(models.VisitorCount.id == 1).first()
+    if not visitor:
+        visitor = models.VisitorCount(id=1, count=0)
+        db.add(visitor)
+        db.commit()
+        db.refresh(visitor)
+    return visitor.count
+
+def increment_visitor(db: Session):
+    visitor = db.query(models.VisitorCount).filter(models.VisitorCount.id == 1).first()
+    if not visitor:
+        visitor = models.VisitorCount(id=1, count=1)
+        db.add(visitor)
+    else:
+        visitor.count += 1
+    db.commit()
+    db.refresh(visitor)
+    return visitor.count

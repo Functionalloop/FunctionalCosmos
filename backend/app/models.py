@@ -77,6 +77,11 @@ class ResumeEducation(Base):
     description = Column(String, nullable=True)
     order = Column(Integer, nullable=False, default=0)
 
+class VisitorCount(Base):
+    __tablename__ = "visitor_count"
+    id = Column(Integer, primary_key=True, default=1)
+    count = Column(Integer, default=0)
+
 class ResumeCertification(Base):
     __tablename__ = "resume_certifications"
 

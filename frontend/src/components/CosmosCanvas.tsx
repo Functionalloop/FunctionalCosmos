@@ -158,7 +158,7 @@ export default function CosmosCanvas() {
         />
 
         {useStore.getState().performanceMode === 'high' && (
-          <EffectComposer disableNormalPass multisampling={4}>
+          <EffectComposer enableNormalPass={false} multisampling={4}>
             <Bloom luminanceThreshold={0.4} luminanceSmoothing={0.9} intensity={1.5} mipmapBlur />
             <ChromaticAberration offset={new THREE.Vector2(0.0004, 0.0004)} />
             <Vignette eskil={false} offset={0.3} darkness={0.5} />

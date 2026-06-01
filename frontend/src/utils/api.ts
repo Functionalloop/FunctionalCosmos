@@ -77,8 +77,8 @@ export interface ResumeCertification {
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api';
 
-async function fetchAPI<T>(endpoint: string): Promise<T> {
-  const res = await fetch(`${API_BASE_URL}${endpoint}`);
+async function fetchAPI<T>(endpoint: string, options?: RequestInit): Promise<T> {
+  const res = await fetch(`${API_BASE_URL}${endpoint}`, options);
   if (!res.ok) {
     throw new Error(`Failed to fetch from endpoint: ${endpoint}`);
   }
@@ -96,4 +96,7 @@ export const api = {
   getResumeSkills: () => fetchAPI<ResumeSkill[]>('/resume/skills'),
   getResumeEducation: () => fetchAPI<ResumeEducation[]>('/resume/education'),
   getResumeCertifications: () => fetchAPI<ResumeCertification[]>('/resume/certifications'),
+  // Visitors
+  getVisitorCount: () => fetchAPI<{ count: number }>('/visitors'),
+  pingVisitor: () => fetchAPI<{ count: number }>('/visitors/ping', { method: 'POST' }),
 };

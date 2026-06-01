@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import BlackholeTransition from "../components/BlackholeTransition";
+import CustomCursor from "../components/CustomCursor";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -31,6 +32,7 @@ export default function RootLayout({
       <body>
         {children}
         <BlackholeTransition />
+        <CustomCursor />
       </body>
     </html>
   );
