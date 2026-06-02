@@ -17,7 +17,12 @@ body {
   font-family: 'Cormorant Garamond', serif;
   margin: 0;
   padding: 0;
-  cursor: none;
+  cursor: default !important;
+}
+
+/* Force the normal cursor on the Three.js canvas */
+canvas {
+  cursor: default !important;
 }
 
 /* Elegant Typography Utilities */

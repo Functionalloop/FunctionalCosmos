@@ -34,6 +34,7 @@ import { useStore, PlanetType } from '../store/useStore';
 import { PLANETS_CONFIG } from '../utils/celestialData';
 import { api } from '../utils/api';
 import { audioManager } from '../utils/audio';
+import ViewToggle from './ViewToggle';
 
 function getTheme(planet: PlanetType | null) {
   switch (planet) {
@@ -655,8 +656,9 @@ export default function UIOverlay() {
             })}
           </div>
 
-          {/* Right: Audio toggle + COORD */}
-          <div className="flex items-center gap-4 min-w-[160px] justify-end">
+          {/* Right: Audio toggle + COORD + View Toggle */}
+          <div className="flex items-center gap-4 min-w-[200px] justify-end">
+            <ViewToggle />
             <span
               className="font-mono text-[7px] uppercase tracking-widest transition-colors duration-500"
               style={{ color: `${activeColor}50` }}
