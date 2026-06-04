@@ -5,6 +5,8 @@ echo   Starting Functional Cosmos Project...
 echo ===================================================
 echo.
 
+cd /d "%~dp0"
+
 :: Detect backend python executable
 set BACKEND_RUN_CMD=
 if exist "backend\venv\Scripts\python.exe" (
@@ -16,10 +18,10 @@ if exist "backend\venv\Scripts\python.exe" (
 )
 
 echo Starting Backend API Server in a new window...
-start "Functional Cosmos Backend" cmd /k "%BACKEND_RUN_CMD%"
+start "Functional Cosmos Backend" cmd /k "cd /d ""%~dp0"" && %BACKEND_RUN_CMD%"
 
 echo Starting Frontend Next.js Dev Server in a new window...
-start "Functional Cosmos Frontend" cmd /k "cd frontend ^&^& npm run dev"
+start "Functional Cosmos Frontend" cmd /k "cd /d ""%~dp0frontend"" && npm run dev"
 
 echo.
 echo ===================================================
