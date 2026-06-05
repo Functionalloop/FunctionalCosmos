@@ -11,6 +11,7 @@ import Sun          from './celestial/Sun';
 import Planet       from './celestial/Planet';
 import GalaxyNebula from './celestial/GalaxyNebula';
 import AsteroidBelt from './celestial/AsteroidBelt';
+import Satellite    from './celestial/Satellite';
 
 export default function CelestialSystem() {
   return (
@@ -18,6 +19,7 @@ export default function CelestialSystem() {
       <Sun />
       <GalaxyNebula />
       <AsteroidBelt />
+      <Satellite />
 
       {Object.values(PLANETS_CONFIG).map((config) => (
         <Planet key={config.type} config={config} />
