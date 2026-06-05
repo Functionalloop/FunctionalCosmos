@@ -16,7 +16,8 @@ const KEYBINDS = [
   { key: 'ESC',   action: 'Reset View' },
   { key: 'SPACE', action: 'Free Roam' },
   { key: 'M', action: 'Toggle Audio' },
-  { key: '?', action: 'Toggle HUD'   },
+  { key: 'H', action: 'Toggle UI'    },
+  { key: '?', action: 'Show Keybinds' },
 ];
 
 export default function KeybindsPanel({ onClose }: KeybindsPanelProps) {

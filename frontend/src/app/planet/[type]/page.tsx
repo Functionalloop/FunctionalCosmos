@@ -15,6 +15,7 @@ import {
   ResumeEducation,
   ResumeCertification,
 } from '../../../utils/api';
+import { audioManager } from '../../../utils/audio';
 
 // --- Types ---
 type PlanetType = 'projects' | 'tech_stack' | 'socials' | 'academics' | 'resume';
@@ -402,6 +403,14 @@ export default function PlanetDetailPage() {
   useEffect(() => {
     const t = setTimeout(() => setPageVisible(true), 80);
     return () => clearTimeout(t);
+  }, []);
+
+  // Audio adjustments for detail page
+  useEffect(() => {
+    audioManager.enterPlanetSurface();
+    return () => {
+      audioManager.leavePlanetSurface();
+    };
   }, []);
 
   // Fetch data for this planet type

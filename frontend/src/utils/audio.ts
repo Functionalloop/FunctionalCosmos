@@ -352,6 +352,34 @@ class CosmosAudioManager {
     }
   }
 
+  // ── Detail Page Ambient Drop ──────────────────────────────────────────────
+  public enterPlanetSurface(): void {
+    if (!this.ctx || this.isMuted) return;
+    const t = this.ctx.currentTime;
+    
+    // Mute the primary synth drones
+    if (this.ambientGain) {
+      this.ambientGain.gain.cancelScheduledValues(t);
+      this.ambientGain.gain.linearRampToValueAtTime(0.01, t + 1.5);
+    }
+    if (this.ambientFilter) {
+      this.ambientFilter.frequency.cancelScheduledValues(t);
+      this.ambientFilter.frequency.exponentialRampToValueAtTime(80, t + 1.5);
+    }
+    
+    // Drop the HTML ambient track significantly
+    if (this.ambientAudio) {
+      this.ambientAudio.volume = 0.03;
+    }
+  }
+
+  public leavePlanetSurface(): void {
+    if (this.ambientAudio && !this.isMuted) {
+      this.ambientAudio.volume = 0.18;
+    }
+    // Synth nodes will be restored naturally by the next setCosmosState call
+  }
+
   // ── Procedural Click SFX ─────────────────────────────────────────────────
   public playClick(color?: string): void {
     if (!this.ctx || this.isMuted) return;

@@ -53,23 +53,32 @@ export default function Moon({
         stride={0}
         interval={1}
       >
-        <mesh
-          ref={meshRef}
-          onClick={(e) => {
-            e.stopPropagation();
-            audioManager.playClick();
-            onSelect();
-          }}
-          onPointerOver={() => {
-            if (!cooldown.current) {
-              audioManager.playHover();
-              cooldown.current = true;
-              setTimeout(() => { cooldown.current = false; }, 600);
-            }
-            setIsCursorActive(true);
-          }}
-          onPointerOut={() => setIsCursorActive(false)}
-        >
+        <mesh ref={meshRef}>
+          {/* Invisible Hitbox for easier clicking */}
+          <mesh
+            onClick={(e) => {
+              e.stopPropagation();
+              audioManager.playClick();
+              onSelect();
+            }}
+            onPointerOver={(e) => {
+              e.stopPropagation();
+              if (!cooldown.current) {
+                audioManager.playHover();
+                cooldown.current = true;
+                setTimeout(() => { cooldown.current = false; }, 600);
+              }
+              setIsCursorActive(true);
+            }}
+            onPointerOut={(e) => {
+              e.stopPropagation();
+              setIsCursorActive(false);
+            }}
+          >
+            <sphereGeometry args={[moonRadius * 3.5, 16, 16]} />
+            <meshBasicMaterial transparent opacity={0} depthWrite={false} />
+          </mesh>
+
           <sphereGeometry args={[moonRadius, 24, 24]} />
           <meshStandardMaterial
             color={isActive ? '#ffffff' : color}

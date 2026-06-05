@@ -12,7 +12,9 @@ import {
   Compass,
   Star,
   Menu,
-  X
+  X,
+  Eye,
+  EyeOff
 } from 'lucide-react';
 
 const GithubIcon = (props: React.SVGProps<SVGSVGElement>) => (
@@ -190,6 +192,8 @@ export default function UIOverlay() {
   const togglePerformanceMode = useStore((state) => state.togglePerformanceMode);
   const showSunProfile = useStore((state) => state.showSunProfile);
   const setShowSunProfile = useStore((state) => state.setShowSunProfile);
+  const isUiHidden = useStore((state) => state.isUiHidden);
+  const toggleUiHidden = useStore((state) => state.toggleUiHidden);
 
   const isBlackholeTransitioning = useStore((state) => state.isBlackholeTransitioning);
 
@@ -229,8 +233,10 @@ export default function UIOverlay() {
           e.preventDefault();
           toggleFreeRoam();
           break;
-        case '?':
         case 'h':
+          toggleUiHidden();
+          break;
+        case '?':
           setShowKeybinds((prev) => !prev);
           break;
         case 'm':
@@ -243,7 +249,7 @@ export default function UIOverlay() {
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
     };
-  }, [setPlanet, setViewState, toggleFreeRoam, audioStarted]);
+  }, [setPlanet, setViewState, toggleFreeRoam, audioStarted, toggleUiHidden]);
 
   // Trigger whoosh SFX when blackhole transition fires
   useEffect(() => {
@@ -275,12 +281,14 @@ export default function UIOverlay() {
     }
   };
 
+  const hiddenClass = `transition-all duration-700 ${isUiHidden ? 'opacity-0 !pointer-events-none' : 'opacity-100'}`;
+
   return (
     <>
     <div className="absolute inset-0 z-10 pointer-events-none flex flex-col justify-between p-6 select-none">
 
       {/* --- TOP HUD BAR (status badge, offset below nav bar) --- */}
-      <div className="w-full flex justify-between items-center pointer-events-auto mt-12">
+      <div className={`w-full flex justify-between items-center pointer-events-auto mt-12 ${hiddenClass}`}>
         {/* Left side empty or reserved for future elements */}
         <div></div>
 
@@ -294,9 +302,10 @@ export default function UIOverlay() {
         </motion.div>
       </div>
 
-      {/* --- FUNCTIONAL LOGO — centered on load, shifts to top-left on interaction --- */}
+
+      {/* --- FUNCTIONAL LOGO — large centered hero on initial load --- */}
       <AnimatePresence mode="wait">
-        {currentState === 0 ? (
+        {currentState === 0 && (
           <motion.div
             key="functional-center"
             initial={{ opacity: 0, scale: 0.95 }}
@@ -307,7 +316,7 @@ export default function UIOverlay() {
           >
             <div className="flex flex-col items-center gap-2 text-center">
               <span className="font-cormorant text-[0.66rem] tracking-[0.55em] uppercase text-teal-200/50 mb-6">
-                Systems Architect & Developer Portfolio
+                Systems Architect &amp; Developer Portfolio
               </span>
               <h1 className="font-cinzel text-[clamp(2rem,5.5vw,5rem)] tracking-[0.22em] uppercase m-0 leading-none bg-gradient-to-br from-[#fed7aa] via-[#fb923c] to-[#ea580c] text-transparent bg-clip-text glow-teal drop-shadow-2xl">
                 Functional
@@ -318,27 +327,11 @@ export default function UIOverlay() {
               </p>
             </div>
           </motion.div>
-        ) : (
-          <motion.div
-            key="functional-corner"
-            initial={{ opacity: 0, x: -20, y: -10 }}
-            animate={{ opacity: 1, x: 0, y: 0 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.6, ease: 'easeOut', delay: 0.1 }}
-            className="absolute top-2 left-6 pointer-events-none flex flex-col items-start gap-0.5 z-[200]"
-          >
-            <h1 className="font-cinzel text-[clamp(1rem,2vw,1.6rem)] tracking-[0.22em] uppercase m-0 leading-none bg-gradient-to-br from-[#fed7aa] via-[#fb923c] to-[#ea580c] text-transparent bg-clip-text glow-teal drop-shadow-lg">
-              Functional
-            </h1>
-            <span className="font-cormorant text-[0.55rem] tracking-[0.35em] uppercase text-teal-200/35">
-              Systems Architect
-            </span>
-          </motion.div>
         )}
       </AnimatePresence>
 
       {/* --- TOP NAVIGATION BAR --- */}
-      <div className="absolute top-0 left-0 right-0 pointer-events-auto z-[100] flex flex-col items-center">
+      <div className={`absolute top-0 left-0 right-0 pointer-events-auto z-[100] flex flex-col items-center ${hiddenClass}`}>
 
         {/* Top Bar Strip */}
         <div
@@ -352,8 +345,29 @@ export default function UIOverlay() {
           <div className="absolute top-0 left-0 w-4 h-4 border-t border-l" style={{ borderColor: `${activeColor}60` }} />
           <div className="absolute top-0 right-0 w-4 h-4 border-t border-r" style={{ borderColor: `${activeColor}60` }} />
 
-          {/* Left: spacer to balance flex layout */}
-          <div className="min-w-[160px]" />
+          {/* Left: Logo — fades in when state > 0, wrapper maintains identical width to right side */}
+          <div className="flex flex-col items-start justify-center min-w-[200px]">
+            <AnimatePresence>
+              {currentState !== 0 && !isUiHidden && (
+                <motion.div
+                  layoutId="functional-logo"
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -10 }}
+                  transition={{ duration: 0.6, ease: 'easeOut', delay: 0.1 }}
+                  className="flex flex-col items-start justify-center"
+                >
+                  <h1 className="font-cinzel text-[clamp(0.85rem,1.4vw,1.35rem)] tracking-[0.22em] uppercase m-0 leading-none bg-gradient-to-br from-[#fed7aa] via-[#fb923c] to-[#ea580c] text-transparent bg-clip-text drop-shadow-lg">
+                    Functional
+                  </h1>
+                  <span className="font-cormorant text-[0.52rem] tracking-[0.35em] uppercase text-teal-200/35 mt-0.5">
+                    Systems Architect
+                  </span>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+
 
           {/* Center: Planet Nav Tabs */}
           <div className="flex items-center gap-1">
@@ -444,8 +458,9 @@ export default function UIOverlay() {
             })}
           </div>
 
-          {/* Right: Audio toggle + COORD + View Toggle */}
+          {/* Right: Audio toggle + COORD + View Toggle — same width as left */}
           <div className="flex items-center gap-4 min-w-[200px] justify-end">
+
             <ViewToggle />
             <span
               className="font-mono text-[7px] uppercase tracking-widest transition-colors duration-500"
@@ -481,6 +496,18 @@ export default function UIOverlay() {
               }}
             >
               {isSidebarOpen ? <X className="w-3 h-3" /> : <Menu className="w-3 h-3" />}
+            </button>
+            <button
+              onClick={toggleUiHidden}
+              className="flex items-center justify-center w-6 h-6 rounded border cursor-pointer transition-all group"
+              style={{
+                borderColor: `${activeColor}35`,
+                backgroundColor: 'transparent',
+                color: activeColor,
+              }}
+              title="Hide UI (H)"
+            >
+              <EyeOff className="w-3 h-3 group-hover:scale-110 transition-transform" />
             </button>
           </div>
         </div>
@@ -1034,7 +1061,7 @@ export default function UIOverlay() {
       </AnimatePresence>
 
       {/* --- BOTTOM HUD BAR --- */}
-      <div className="w-full flex justify-between items-end pointer-events-auto mb-2">
+      <div className={`w-full flex justify-between items-end pointer-events-auto mb-2 ${hiddenClass}`}>
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -1062,7 +1089,7 @@ export default function UIOverlay() {
       </AnimatePresence>
 
       {/* --- BOTTOM CONTROLS & NAVIGATION --- */}
-      <div className="w-full flex justify-between items-center pointer-events-auto">
+      <div className={`w-full flex justify-between items-center pointer-events-auto ${hiddenClass}`}>
         <div className="flex gap-3">
           {currentState > 0 && (
             <motion.button
@@ -1130,6 +1157,34 @@ export default function UIOverlay() {
       </AnimatePresence>
 
     </div>
+
+    {/* Persistent Top-Middle Logo & Hide/Unhide UI Button when UI is hidden */}
+    <AnimatePresence>
+      {isUiHidden && (
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -20 }}
+          transition={{ duration: 0.6, ease: 'easeOut' }}
+          className="absolute top-8 left-1/2 -translate-x-1/2 flex flex-col items-center pointer-events-auto z-[200]"
+        >
+          <motion.div layoutId="functional-logo" className="flex flex-col items-center justify-center">
+            <h1 className="font-cinzel text-[clamp(0.85rem,1.4vw,1.35rem)] tracking-[0.22em] uppercase m-0 leading-none bg-gradient-to-br from-[#fed7aa] via-[#fb923c] to-[#ea580c] text-transparent bg-clip-text drop-shadow-lg text-center">
+              Functional
+            </h1>
+            <span className="font-cormorant text-[0.52rem] tracking-[0.35em] uppercase text-teal-200/35 mt-0.5 text-center">
+              Systems Architect
+            </span>
+          </motion.div>
+          <button
+            onClick={toggleUiHidden}
+            className="mt-4 flex items-center gap-2 px-4 py-1.5 rounded-full border border-teal-500/30 bg-black/40 backdrop-blur hover:bg-teal-900/30 text-teal-200/80 hover:text-teal-50 hover:border-teal-500/60 transition-all font-cormorant text-[10px] tracking-widest uppercase cursor-pointer"
+          >
+            <Eye className="w-3 h-3" /> Show UI
+          </button>
+        </motion.div>
+      )}
+    </AnimatePresence>
 
     {/* Sun Profile Modal — rendered above the 3D canvas */}
     {showSunProfile && <SunProfileModal onClose={() => setShowSunProfile(false)} />}

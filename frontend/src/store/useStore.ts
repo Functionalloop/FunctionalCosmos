@@ -33,6 +33,8 @@ interface CosmosStore {
   performanceMode: 'high' | 'low';
   showSunProfile:  boolean;
   isCursorActive:  boolean;
+  isUiHidden:      boolean;
+
 
   // ── Remote Data ──────────────────────────────────────────────────────────────
   projects:             Project[];
@@ -61,6 +63,8 @@ interface CosmosStore {
   togglePerformanceMode: () => void;
   setShowSunProfile:     (show: boolean) => void;
   setIsCursorActive:     (active: boolean) => void;
+  toggleUiHidden:        () => void;
+
 
   // ── Data Actions ─────────────────────────────────────────────────────────────
   fetchInitialData: () => Promise<void>;
@@ -82,6 +86,8 @@ export const useStore = create<CosmosStore>((set, get) => ({
   performanceMode: 'high',
   showSunProfile:  false,
   isCursorActive:  false,
+  isUiHidden:      false,
+
 
   // Remote Data
   projects:             [],
@@ -148,6 +154,8 @@ export const useStore = create<CosmosStore>((set, get) => ({
 
   setShowSunProfile:  (show)   => set({ showSunProfile: show }),
   setIsCursorActive:  (active) => set({ isCursorActive: active }),
+  toggleUiHidden:     ()       => set((s) => ({ isUiHidden: !s.isUiHidden })),
+
 
   // ── Data Actions ──────────────────────────────────────────────────────────
   fetchInitialData: async () => {
