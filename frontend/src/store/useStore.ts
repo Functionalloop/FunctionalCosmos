@@ -1,89 +1,109 @@
 import { create } from 'zustand';
-import { api, Project, TechStack, Academic, Social, ResumeExperience, ResumeSkill, ResumeEducation, ResumeCertification } from '../utils/api';
+import {
+  api,
+  Project,
+  TechStack,
+  Academic,
+  Social,
+  ResumeExperience,
+  ResumeSkill,
+  ResumeEducation,
+  ResumeCertification,
+} from '../utils/api';
 
-export type CosmosState = 0 | 1 | 2 | 3 | 4; // 0: Void, 1: Target Lock, 2: Cinematic Orbit, 3: Horizon View, 4: Free Roam
-export type PlanetType = 'projects' | 'tech_stack' | 'socials' | 'academics' | 'resume';
+// ── Type Definitions ──────────────────────────────────────────────────────────
+
+/** 0=Void, 1=Target Lock, 2=Cinematic Orbit, 3=Horizon View, 4=Free Roam */
+export type CosmosState = 0 | 1 | 2 | 3 | 4;
+export type PlanetType  = 'projects' | 'tech_stack' | 'socials' | 'academics' | 'resume';
+
+// ── Store Interface ───────────────────────────────────────────────────────────
 
 interface CosmosStore {
+  // ── Navigation State ────────────────────────────────────────────────────────
   currentState: CosmosState;
   activePlanet: PlanetType | null;
-  activeMoon: string | null; // slug or key
+  activeMoon:   string | null;
 
-  // Blackhole transition state
+  // ── Transition State ─────────────────────────────────────────────────────────
   isBlackholeTransitioning: boolean;
-  pendingDetailPlanet: PlanetType | null;
+  pendingDetailPlanet:      PlanetType | null;
 
-  // Visual settings
+  // ── Visual / UI State ────────────────────────────────────────────────────────
   performanceMode: 'high' | 'low';
-  
-  // Data
-  projects: Project[];
-  techStack: TechStack[];
-  academics: Academic[];
-  socials: Social[];
-  resumeExperience: ResumeExperience[];
-  resumeSkills: ResumeSkill[];
-  resumeEducation: ResumeEducation[];
+  showSunProfile:  boolean;
+  isCursorActive:  boolean;
+
+  // ── Remote Data ──────────────────────────────────────────────────────────────
+  projects:             Project[];
+  techStack:            TechStack[];
+  academics:            Academic[];
+  socials:              Social[];
+  resumeExperience:     ResumeExperience[];
+  resumeSkills:         ResumeSkill[];
+  resumeEducation:      ResumeEducation[];
   resumeCertifications: ResumeCertification[];
   loading: boolean;
-  error: string | null;
+  error:   string | null;
 
-  // Actions
-  setPlanet: (planet: PlanetType | null) => void;
-  selectMoon: (moon: string | null) => void;
-  setViewState: (state: CosmosState) => void;
-  toggleFreeRoam: () => void;
-  goBack: () => void;
-  fetchInitialData: () => Promise<void>;
-  triggerDetailPage: (planet: PlanetType) => void;
+  // ── Navigation Actions ───────────────────────────────────────────────────────
+  setPlanet:        (planet: PlanetType | null) => void;
+  selectMoon:       (moon: string | null) => void;
+  setViewState:     (state: CosmosState) => void;
+  toggleFreeRoam:   () => void;
+  goBack:           () => void;
+
+  // ── Transition Actions ───────────────────────────────────────────────────────
+  triggerDetailPage:      (planet: PlanetType) => void;
   clearBlackholeTransition: () => void;
+
+  // ── Visual / UI Actions ──────────────────────────────────────────────────────
   togglePerformanceMode: () => void;
-  showSunProfile: boolean;
-  setShowSunProfile: (show: boolean) => void;
-  isCursorActive: boolean;
-  setIsCursorActive: (active: boolean) => void;
+  setShowSunProfile:     (show: boolean) => void;
+  setIsCursorActive:     (active: boolean) => void;
+
+  // ── Data Actions ─────────────────────────────────────────────────────────────
+  fetchInitialData: () => Promise<void>;
 }
 
+// ── Store Implementation ──────────────────────────────────────────────────────
+
 export const useStore = create<CosmosStore>((set, get) => ({
+  // Navigation State
   currentState: 0,
   activePlanet: null,
-  activeMoon: null,
+  activeMoon:   null,
 
+  // Transition State
   isBlackholeTransitioning: false,
-  pendingDetailPlanet: null,
+  pendingDetailPlanet:      null,
 
+  // Visual / UI State
   performanceMode: 'high',
-  
-  projects: [],
-  techStack: [],
-  academics: [],
-  socials: [],
-  resumeExperience: [],
-  resumeSkills: [],
-  resumeEducation: [],
+  showSunProfile:  false,
+  isCursorActive:  false,
+
+  // Remote Data
+  projects:             [],
+  techStack:            [],
+  academics:            [],
+  socials:              [],
+  resumeExperience:     [],
+  resumeSkills:         [],
+  resumeEducation:      [],
   resumeCertifications: [],
   loading: false,
-  error: null,
+  error:   null,
 
-  togglePerformanceMode: () => {
-    set((state) => ({ performanceMode: state.performanceMode === 'high' ? 'low' : 'high' }));
-  },
-
-  showSunProfile: false,
-  setShowSunProfile: (show) => set({ showSunProfile: show }),
-
-  isCursorActive: false,
-  setIsCursorActive: (active) => set({ isCursorActive: active }),
-
+  // ── Navigation Actions ────────────────────────────────────────────────────
   setPlanet: (planet) => {
     if (planet === null) {
       set({ activePlanet: null, activeMoon: null, currentState: 0 });
     } else {
-      // Transition from 0 -> 1 when selecting a planet
-      set({ 
-        activePlanet: planet, 
-        activeMoon: null, 
-        currentState: get().activePlanet === planet ? get().currentState : 1 
+      set({
+        activePlanet: planet,
+        activeMoon:   null,
+        currentState: get().activePlanet === planet ? get().currentState : 1,
       });
     }
   },
@@ -92,22 +112,18 @@ export const useStore = create<CosmosStore>((set, get) => ({
     if (moon === null) {
       set({ activeMoon: null, currentState: 2 });
     } else {
-      // Target lock -> Cinematic Orbit when selecting a moon
       set({ activeMoon: moon, currentState: 3 });
     }
   },
 
   setViewState: (state) => {
     set({ currentState: state });
-    if (state === 0) {
-      set({ activePlanet: null, activeMoon: null });
-    }
+    if (state === 0) set({ activePlanet: null, activeMoon: null });
   },
 
   toggleFreeRoam: () => {
     const { currentState } = get();
     if (currentState === 4) {
-      // If returning from Free Roam, default back to Void to avoid breaking camera lerp states
       set({ currentState: 0, activePlanet: null, activeMoon: null });
     } else {
       set({ currentState: 4 });
@@ -115,35 +131,32 @@ export const useStore = create<CosmosStore>((set, get) => ({
   },
 
   goBack: () => {
-    const { currentState, activeMoon, activePlanet } = get();
-    if (currentState === 4) {
-      // Free Roam is handled by toggleFreeRoam
-      return;
-    }
-    if (currentState === 3) {
-      // From Horizon back to Cinematic Orbit
-      set({ currentState: 2, activeMoon: null });
-    } else if (currentState === 2) {
-      // From Cinematic Orbit back to Target Lock
-      set({ currentState: 1 });
-    } else if (currentState === 1) {
-      // From Target Lock back to Void
-      set({ currentState: 0, activePlanet: null });
-    }
+    const { currentState } = get();
+    if (currentState === 4)  return; // handled by toggleFreeRoam
+    if (currentState === 3)  set({ currentState: 2, activeMoon: null });
+    else if (currentState === 2) set({ currentState: 1 });
+    else if (currentState === 1) set({ currentState: 0, activePlanet: null });
   },
 
-  triggerDetailPage: (planet: PlanetType) => {
-    set({ isBlackholeTransitioning: true, pendingDetailPlanet: planet });
-  },
+  // ── Transition Actions ────────────────────────────────────────────────────
+  triggerDetailPage: (planet) => set({ isBlackholeTransitioning: true, pendingDetailPlanet: planet }),
+  clearBlackholeTransition: () => set({ isBlackholeTransitioning: false, pendingDetailPlanet: null }),
 
-  clearBlackholeTransition: () => {
-    set({ isBlackholeTransitioning: false, pendingDetailPlanet: null });
-  },
+  // ── Visual / UI Actions ───────────────────────────────────────────────────
+  togglePerformanceMode: () =>
+    set((s) => ({ performanceMode: s.performanceMode === 'high' ? 'low' : 'high' })),
 
+  setShowSunProfile:  (show)   => set({ showSunProfile: show }),
+  setIsCursorActive:  (active) => set({ isCursorActive: active }),
+
+  // ── Data Actions ──────────────────────────────────────────────────────────
   fetchInitialData: async () => {
     set({ loading: true, error: null });
     try {
-      const [projects, techStack, academics, socials, resumeExperience, resumeSkills, resumeEducation, resumeCertifications] = await Promise.all([
+      const [
+        projects, techStack, academics, socials,
+        resumeExperience, resumeSkills, resumeEducation, resumeCertifications,
+      ] = await Promise.all([
         api.getProjects().catch(() => []),
         api.getTechStack().catch(() => []),
         api.getAcademics().catch(() => []),
@@ -153,10 +166,13 @@ export const useStore = create<CosmosStore>((set, get) => ({
         api.getResumeEducation().catch(() => []),
         api.getResumeCertifications().catch(() => []),
       ]);
-      set({ projects, techStack, academics, socials, resumeExperience, resumeSkills, resumeEducation, resumeCertifications, loading: false });
+      set({
+        projects, techStack, academics, socials,
+        resumeExperience, resumeSkills, resumeEducation, resumeCertifications,
+        loading: false,
+      });
     } catch (err: any) {
       set({ error: err.message || 'Error loading data', loading: false });
     }
   },
 }));
-

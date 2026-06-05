@@ -3,7 +3,7 @@
 // Feature 25: Full Web Audio API spatial audio system
 // ============================================================
 
-type CosmosState = 0 | 1 | 2 | 3 | 4;
+import type { CosmosState } from '../store/useStore';
 
 // Per-planet tone profiles
 const PLANET_TONES: Record<string, { freq: number; detune: number; type: OscillatorType; filterFreq: number; filterQ: number }> = {

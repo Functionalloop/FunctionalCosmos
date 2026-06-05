@@ -58,10 +58,12 @@ function ShootingStar() {
 }
 
 export default function CosmosCanvas() {
-  const currentState = useStore((state) => state.currentState);
-  const setViewState = useStore((state) => state.setViewState);
-  const setPlanet = useStore((state) => state.setPlanet);
-  const activePlanet = useStore((state) => state.activePlanet);
+  const currentState   = useStore((state) => state.currentState);
+  const setViewState   = useStore((state) => state.setViewState);
+  const setPlanet      = useStore((state) => state.setPlanet);
+  const activePlanet   = useStore((state) => state.activePlanet);
+  // Fix: was useStore.getState() (not reactive!) — now properly subscribed
+  const performanceMode = useStore((state) => state.performanceMode);
 
   const sz = activePlanet ? PLANETS_CONFIG[activePlanet].size : 1;
 
@@ -97,38 +99,14 @@ export default function CosmosCanvas() {
         <directionalLight position={[-8, -15, -5]} intensity={0.15} color="#67e8f9" />
 
         {/* Primary starfield — distant, faint, warm */}
-        <Stars
-          radius={120}
-          depth={50}
-          count={4000}
-          factor={4}
-          saturation={0.5}
-          fade
-          speed={0.5}
-        />
+        <Stars radius={120} depth={50} count={4000} factor={4} saturation={0.5} fade speed={0.5} />
 
         {/* Secondary starfield — closer, smaller, cooler tint */}
-        <Stars
-          radius={60}
-          depth={30}
-          count={1500}
-          factor={2}
-          saturation={0.8}
-          fade
-          speed={0.3}
-        />
+        <Stars radius={60} depth={30} count={1500} factor={2} saturation={0.8} fade speed={0.3} />
 
         {/* Tertiary starfield — dense galactic band */}
         <group rotation={[Math.PI / 6, Math.PI / 4, 0]}>
-          <Stars
-            radius={80}
-            depth={20}
-            count={3000}
-            factor={1.2}
-            saturation={0.9}
-            fade
-            speed={0.1}
-          />
+          <Stars radius={80} depth={20} count={3000} factor={1.2} saturation={0.9} fade speed={0.1} />
         </group>
 
         {/* Shooting Stars */}
@@ -142,7 +120,7 @@ export default function CosmosCanvas() {
         {/* Cinematic camera flights */}
         <CameraController />
 
-        {/* Always-on orbit controls — camera position released to user after fly-in */}
+        {/* Always-on orbit controls */}
         <OrbitControls
           enabled={true}
           enablePan={currentState === 0 || currentState === 4}
@@ -150,14 +128,12 @@ export default function CosmosCanvas() {
           enableRotate={true}
           autoRotate={currentState === 0}
           autoRotateSpeed={0.5}
-
-
           maxDistance={currentState === 2 ? 16 * sz : currentState === 3 ? 4.0 * sz : 120}
           minDistance={currentState === 3 ? 1.1 * sz : 2.2 * sz}
           makeDefault
         />
 
-        {useStore.getState().performanceMode === 'high' && (
+        {performanceMode === 'high' && (
           <EffectComposer enableNormalPass={false} multisampling={4}>
             <Bloom luminanceThreshold={0.4} luminanceSmoothing={0.9} intensity={1.5} mipmapBlur />
             <ChromaticAberration offset={new THREE.Vector2(0.0004, 0.0004)} />
