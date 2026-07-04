@@ -20,15 +20,15 @@
  */
 
 import { useRef, useEffect } from 'react';
-import { useFrame }   from '@react-three/fiber';
-import { useGLTF }    from '@react-three/drei';
-import * as THREE     from 'three';
+import { useFrame } from '@react-three/fiber';
+import { useGLTF } from '@react-three/drei';
+import * as THREE from 'three';
 
-const MODEL_PATH   = '/assets/satellite.glb';
+const MODEL_PATH = '/assets/satellite.glb';
 const ORBIT_RADIUS = 21;
-const ORBIT_SPEED  = 0.045;
+const ORBIT_SPEED = 0.045;
 const ORBIT_HEIGHT = 8;
-const MODEL_SCALE  = 0.038;
+const MODEL_SCALE = 0.053;
 
 useGLTF.preload(MODEL_PATH);
 
@@ -42,11 +42,11 @@ useGLTF.preload(MODEL_PATH);
 //   Olive/anodised: warm grey-green alu  #9a9a7a
 
 interface MatOverride {
-  color?:            string;
-  emissive?:         string;
+  color?: string;
+  emissive?: string;
   emissiveIntensity?: number;
-  metalness?:        number;
-  roughness?:        number;
+  metalness?: number;
+  roughness?: number;
 }
 
 // Keyed by EXACT material name or substring match prefix
@@ -152,11 +152,11 @@ const MAT_RULES: Array<{ match: (name: string) => boolean; override: MatOverride
 ];
 
 function applyOverride(mat: THREE.MeshStandardMaterial, ov: MatOverride) {
-  if (ov.color            != null) mat.color.set(ov.color);
-  if (ov.emissive         != null) mat.emissive.set(ov.emissive);
+  if (ov.color != null) mat.color.set(ov.color);
+  if (ov.emissive != null) mat.emissive.set(ov.emissive);
   if (ov.emissiveIntensity != null) mat.emissiveIntensity = ov.emissiveIntensity;
-  if (ov.metalness        != null) mat.metalness  = ov.metalness;
-  if (ov.roughness        != null) mat.roughness  = ov.roughness;
+  if (ov.metalness != null) mat.metalness = ov.metalness;
+  if (ov.roughness != null) mat.roughness = ov.roughness;
   mat.needsUpdate = true;
 }
 
@@ -175,7 +175,7 @@ export default function Satellite() {
       if (!(obj instanceof THREE.Mesh)) return;
 
       // Enable shadows on every mesh
-      obj.castShadow    = true;
+      obj.castShadow = true;
       obj.receiveShadow = true;
 
       const mats = Array.isArray(obj.material) ? obj.material : [obj.material];
@@ -191,7 +191,7 @@ export default function Satellite() {
         }
       });
     });
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useFrame((state) => {
