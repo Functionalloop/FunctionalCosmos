@@ -1,10 +1,15 @@
 services:
+  # ---------------------------------------------------------
+  # BACKEND: FastAPI Python Service
+  # ---------------------------------------------------------
   - type: web
     name: functional-cosmos-api
     env: python
+    region: oregon
+    plan: free
     rootDir: backend
-    buildCommand: pip install -r requirements.txt
-    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    buildCommand: "pip install -r requirements.txt"
+    startCommand: "uvicorn app.main:app --host 0.0.0.0 --port $PORT"
     envVars:
       - key: PYTHON_VERSION
         value: 3.11.0
