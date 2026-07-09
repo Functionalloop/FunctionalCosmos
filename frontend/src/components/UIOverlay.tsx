@@ -572,7 +572,7 @@ export default function UIOverlay() {
                     const PlanetIcon = getPlanetIcon(activePlanet);
 
                     let subItems: { name: string, slug: string }[] = [];
-                    if (activePlanet === 'projects') subItems = projects.map(p => ({ name: p.title, slug: p.slug }));
+                    if (activePlanet === 'projects') subItems = projects.slice(0, 5).map(p => ({ name: p.title, slug: p.slug }));
                     if (activePlanet === 'tech_stack') subItems = Array.from(new Set(techStack.map(t => t.category))).slice(0,4).map(c => ({ name: c, slug: c.toLowerCase() }));
                     if (activePlanet === 'academics') subItems = academics.map(a => ({ name: a.degree.split(' ').slice(-2).join(' ') || a.institution.split(' ')[0], slug: `acad-${a.id}` }));
                     if (activePlanet === 'socials') subItems = socials.slice(0,4).map(s => ({ name: s.platform, slug: s.platform.toLowerCase() }));
@@ -952,7 +952,7 @@ export default function UIOverlay() {
                 </div>
 
                 <div className="flex flex-col gap-2 max-h-[180px] overflow-y-auto custom-scrollbar pr-2">
-                  {activePlanet === 'projects' && projects.map((p, i) => (
+                  {activePlanet === 'projects' && projects.slice(0, 5).map((p, i) => (
                     <motion.button
                       key={p.slug}
                       initial={{ opacity: 0, x: -20 }}
@@ -973,7 +973,7 @@ export default function UIOverlay() {
                       onClick={() => { setViewState(3); useStore.setState({ activeMoon: cat.toLowerCase() }); }}
                       className={`text-left font-cormorant tracking-wide text-sm ${theme.bg} ${theme.bgHover} border ${theme.border} ${theme.borderHover} px-4 py-2.5 rounded text-teal-100/80 ${theme.textHover} transition-all cursor-pointer`}
                     >
-                      {cat} Array
+                      {cat}
                     </motion.button>
                   ))}
                   {activePlanet === 'academics' && academics.map((a, i) => (

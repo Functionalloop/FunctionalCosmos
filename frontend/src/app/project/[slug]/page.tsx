@@ -15,6 +15,49 @@ const GithubIcon = (props: React.SVGProps<SVGSVGElement>) => (
 import { api, Project } from '../../../utils/api';
 import '../../../app/flat/flat.css';
 
+function renderMarkdown(text: string) {
+  if (!text) return null;
+  return text.split('\n').map((line, idx) => {
+    const trimmed = line.trim();
+    if (trimmed.startsWith('### ')) {
+      return (
+        <h3 key={idx} className="font-cinzel text-2xl mt-8 mb-4 text-teal-300">
+          {trimmed.replace('### ', '')}
+        </h3>
+      );
+    }
+    if (trimmed.startsWith('#### ')) {
+      return (
+        <h4 key={idx} className="font-cormorant text-xl font-semibold mt-6 mb-3 text-teal-400">
+          {trimmed.replace('#### ', '')}
+        </h4>
+      );
+    }
+    if (trimmed.startsWith('- **')) {
+      const match = trimmed.match(/- \*\*(.*?)\*\*:(.*)/);
+      if (match) {
+        return (
+          <li key={idx} className="ml-6 list-disc text-teal-100/80 my-2 font-cormorant text-lg">
+            <strong className="text-teal-50">{match[1]}:</strong> {match[2]}
+          </li>
+        );
+      }
+    }
+    if (trimmed.startsWith('- ')) {
+      return (
+        <li key={idx} className="ml-6 list-disc text-teal-100/80 my-2 font-cormorant text-lg">
+          {trimmed.replace('- ', '')}
+        </li>
+      );
+    }
+    if (trimmed === '') return <div key={idx} className="h-4" />;
+    return (
+      <p key={idx} className="text-lg font-cormorant text-teal-50/80 my-3 leading-relaxed">
+        {trimmed}
+      </p>
+    );
+  });
+}
 export default function ProjectDetailPage() {
   const params = useParams();
   const router = useRouter();
@@ -112,12 +155,32 @@ export default function ProjectDetailPage() {
           ))}
         </div>
 
-        {/* Placeholder for images or extended info */}
-        <div className="mt-16 p-8 border border-teal-500/10 rounded-2xl bg-teal-950/10 flex flex-col items-center justify-center text-center">
-          <Star className="w-8 h-8 text-teal-500/30 mb-4" />
-          <h3 className="font-cinzel text-lg text-teal-400/70 uppercase tracking-widest mb-2">Architecture Blueprint</h3>
-          <p className="font-cormorant text-teal-100/50">Extended media and technical deep-dives can be mounted here.</p>
-        </div>
+        {/* Project Image */}
+        {project.image_url && (
+          <div className="mt-12 mb-16 rounded-2xl overflow-hidden border border-teal-500/20 shadow-[0_0_40px_rgba(45,212,191,0.1)]">
+            <img 
+              src={project.image_url} 
+              alt={project.title} 
+              className="w-full h-auto object-cover max-h-[70vh]"
+            />
+          </div>
+        )}
+
+        {/* Detailed Content */}
+        {project.content && (
+          <div className="mt-16 pt-8 border-t border-teal-500/20 max-w-4xl">
+            {renderMarkdown(project.content)}
+          </div>
+        )}
+        
+        {/* Placeholder if neither exists */}
+        {!project.image_url && !project.content && (
+          <div className="mt-16 p-8 border border-teal-500/10 rounded-2xl bg-teal-950/10 flex flex-col items-center justify-center text-center">
+            <Star className="w-8 h-8 text-teal-500/30 mb-4" />
+            <h3 className="font-cinzel text-lg text-teal-400/70 uppercase tracking-widest mb-2">Architecture Blueprint</h3>
+            <p className="font-cormorant text-teal-100/50">Extended media and technical deep-dives can be mounted here.</p>
+          </div>
+        )}
 
       </motion.main>
     </div>

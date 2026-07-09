@@ -147,7 +147,7 @@ export default function Planet({ config }: PlanetProps) {
     const sz = config.size;
     switch (config.type) {
       case 'projects':
-        return projects.map((p, i) => ({
+        return projects.slice(0, 5).map((p, i) => ({
           name: p.title, slug: p.slug,
           orbitRadius: sz + 0.6 + i * (0.35 * sz),
           orbitSpeed:  (0.9 - i * 0.15) / Math.max(1, sz * 0.5),

@@ -314,6 +314,14 @@ export default function FlatPage() {
               </Link>
             ))}
           </div>
+
+          <div className="mt-8 flex justify-center md:justify-start">
+            <Link href="/planet/projects" style={{ textDecoration: 'none' }}>
+              <button className="font-cinzel text-xs uppercase tracking-[0.2em] px-6 py-3 border border-teal-500/40 rounded-full text-teal-300 hover:bg-teal-500/10 hover:text-teal-100 transition-all duration-300">
+                View All Projects
+              </button>
+            </Link>
+          </div>
         </ScrollSection>
 
         {/* ════════════════════════════════════════════════════

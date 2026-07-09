@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowLeft, ExternalLink, Star, Share2, GraduationCap, Cpu, FolderGit2, FileText } from 'lucide-react';
+import Link from 'next/link';
 import {
   api,
   Project,
@@ -116,20 +117,24 @@ function ProjectsSection({ projects, theme }: { projects: Project[]; theme: type
     <div>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {projects.map((project, i) => (
-          <motion.div
-            key={project.slug}
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 + i * 0.07 }}
-            style={{
-              background: `radial-gradient(circle at top left, ${theme.accent} 0%, rgba(2,8,12,0.95) 100%)`,
-              border: `1px solid ${theme.border}`,
-              borderRadius: 16,
-              padding: '28px',
-              position: 'relative',
-              overflow: 'hidden',
-            }}
-          >
+          <Link href={`/project/${project.slug}`} key={project.slug} style={{ textDecoration: 'none' }}>
+            <motion.div
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1 + i * 0.07 }}
+              style={{
+                background: `radial-gradient(circle at top left, ${theme.accent} 0%, rgba(2,8,12,0.95) 100%)`,
+                border: `1px solid ${theme.border}`,
+                borderRadius: 16,
+                padding: '28px',
+                position: 'relative',
+                overflow: 'hidden',
+                cursor: 'pointer',
+                transition: 'border-color 0.3s ease',
+              }}
+              onMouseEnter={(e) => e.currentTarget.style.borderColor = theme.accent}
+              onMouseLeave={(e) => e.currentTarget.style.borderColor = theme.border}
+            >
             {/* Glow corner */}
             <div style={{ position: 'absolute', top: 0, left: 0, width: 60, height: 60, background: `radial-gradient(circle, ${theme.accent} 0%, transparent 70%)` }} />
 
@@ -140,7 +145,8 @@ function ProjectsSection({ projects, theme }: { projects: Project[]; theme: type
               <div style={{ display: 'flex', gap: 8, flexShrink: 0 }}>
                 {project.github_url && (
                   <a href={project.github_url} target="_blank" rel="noopener noreferrer"
-                    style={{ padding: '6px', borderRadius: '50%', border: `1px solid ${theme.border}`, color: theme.color, display: 'flex', transition: 'all 0.2s' }}
+                    onClick={(e) => e.stopPropagation()}
+                    style={{ padding: '6px', borderRadius: '50%', border: `1px solid ${theme.border}`, color: theme.color, display: 'flex', transition: 'all 0.2s', position: 'relative', zIndex: 10 }}
                     onMouseEnter={e => (e.currentTarget.style.background = theme.accent)}
                     onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
                     <GithubIcon />
@@ -148,7 +154,8 @@ function ProjectsSection({ projects, theme }: { projects: Project[]; theme: type
                 )}
                 {project.live_url && (
                   <a href={project.live_url} target="_blank" rel="noopener noreferrer"
-                    style={{ padding: '6px', borderRadius: '50%', border: `1px solid ${theme.border}`, color: theme.color, display: 'flex', transition: 'all 0.2s' }}
+                    onClick={(e) => e.stopPropagation()}
+                    style={{ padding: '6px', borderRadius: '50%', border: `1px solid ${theme.border}`, color: theme.color, display: 'flex', transition: 'all 0.2s', position: 'relative', zIndex: 10 }}
                     onMouseEnter={e => (e.currentTarget.style.background = theme.accent)}
                     onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
                     <ExternalLink size={20} />
@@ -169,6 +176,7 @@ function ProjectsSection({ projects, theme }: { projects: Project[]; theme: type
               ))}
             </div>
           </motion.div>
+          </Link>
         ))}
       </div>
     </div>
