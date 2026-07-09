@@ -1,3 +1,5 @@
+import { supabase } from './supabase';
+
 export interface Project {
   id: number;
   title: string;
@@ -75,28 +77,68 @@ export interface ResumeCertification {
   order: number;
 }
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api';
-
-async function fetchAPI<T>(endpoint: string, options?: RequestInit): Promise<T> {
-  const res = await fetch(`${API_BASE_URL}${endpoint}`, options);
-  if (!res.ok) {
-    throw new Error(`Failed to fetch from endpoint: ${endpoint}`);
-  }
-  return res.json();
-}
-
 export const api = {
-  getProjects: () => fetchAPI<Project[]>('/projects'),
-  getProject: (slug: string) => fetchAPI<Project>(`/projects/${slug}`),
-  getTechStack: () => fetchAPI<TechStack[]>('/tech-stack'),
-  getAcademics: () => fetchAPI<Academic[]>('/academics'),
-  getSocials: () => fetchAPI<Social[]>('/socials'),
+  getProjects: async (): Promise<Project[]> => {
+    const { data, error } = await supabase.from('projects').select('*');
+    if (error) throw error;
+    return data;
+  },
+  getProject: async (slug: string): Promise<Project> => {
+    const { data, error } = await supabase.from('projects').select('*').eq('slug', slug).single();
+    if (error) throw error;
+    return data;
+  },
+  getTechStack: async (): Promise<TechStack[]> => {
+    const { data, error } = await supabase.from('tech_stacks').select('*');
+    if (error) throw error;
+    return data;
+  },
+  getAcademics: async (): Promise<Academic[]> => {
+    const { data, error } = await supabase.from('academics').select('*');
+    if (error) throw error;
+    return data;
+  },
+  getSocials: async (): Promise<Social[]> => {
+    const { data, error } = await supabase.from('socials').select('*');
+    if (error) throw error;
+    return data;
+  },
   // Resume
-  getResumeExperience: () => fetchAPI<ResumeExperience[]>('/resume/experience'),
-  getResumeSkills: () => fetchAPI<ResumeSkill[]>('/resume/skills'),
-  getResumeEducation: () => fetchAPI<ResumeEducation[]>('/resume/education'),
-  getResumeCertifications: () => fetchAPI<ResumeCertification[]>('/resume/certifications'),
+  getResumeExperience: async (): Promise<ResumeExperience[]> => {
+    const { data, error } = await supabase.from('resume_experience').select('*').order('order', { ascending: true });
+    if (error) throw error;
+    return data;
+  },
+  getResumeSkills: async (): Promise<ResumeSkill[]> => {
+    const { data, error } = await supabase.from('resume_skills').select('*');
+    if (error) throw error;
+    return data;
+  },
+  getResumeEducation: async (): Promise<ResumeEducation[]> => {
+    const { data, error } = await supabase.from('resume_education').select('*').order('order', { ascending: true });
+    if (error) throw error;
+    return data;
+  },
+  getResumeCertifications: async (): Promise<ResumeCertification[]> => {
+    const { data, error } = await supabase.from('resume_certifications').select('*').order('order', { ascending: true });
+    if (error) throw error;
+    return data;
+  },
   // Visitors
-  getVisitorCount: () => fetchAPI<{ count: number }>('/visitors'),
-  pingVisitor: () => fetchAPI<{ count: number }>('/visitors/ping', { method: 'POST' }),
+  getVisitorCount: async (): Promise<{ count: number }> => {
+    const { data, error } = await supabase.from('visitor_count').select('count').eq('id', 1).single();
+    if (error) return { count: 0 };
+    return data;
+  },
+  pingVisitor: async (): Promise<{ count: number }> => {
+    // Note: To increment a value in Supabase reliably, you typically use an RPC (Remote Procedure Call)
+    // For now, we will do a read/write, but an RPC like `increment_visitor` is better for concurrency.
+    const { data, error } = await supabase.from('visitor_count').select('count').eq('id', 1).single();
+    if (error) return { count: 0 };
+    
+    const newCount = data.count + 1;
+    await supabase.from('visitor_count').update({ count: newCount }).eq('id', 1);
+    
+    return { count: newCount };
+  },
 };

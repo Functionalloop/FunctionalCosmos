@@ -1,15 +1,15 @@
 services:
   # ---------------------------------------------------------
-  # BACKEND: FastAPI Python Service
+  # FRONTEND: Next.js Web App
   # ---------------------------------------------------------
   - type: web
-    name: functional-cosmos-api
-    env: python
+    name: functional-cosmos-web
+    env: node
     region: oregon
     plan: free
-    rootDir: backend
-    buildCommand: "pip install -r requirements.txt"
-    startCommand: "uvicorn app.main:app --host 0.0.0.0 --port $PORT"
+    rootDir: frontend
+    buildCommand: "npm install && npm run build"
+    startCommand: "npm start"
     envVars:
-      - key: PYTHON_VERSION
-        value: 3.11.0
+      - key: NODE_VERSION
+        value: 20.x

@@ -1,12 +1,21 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import AdminDashboard from '../../components/admin/AdminDashboard';
 
 export default function AdminPage() {
   const [password, setPassword] = useState('');
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [error, setError] = useState('');
+  const [isLocalhost, setIsLocalhost] = useState<boolean | null>(null);
+
+  // Security check: Only allow admin panel on localhost
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+      setIsLocalhost(isLocal);
+    }
+  }, []);
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
@@ -17,6 +26,20 @@ export default function AdminPage() {
       setError('Invalid password');
     }
   };
+
+  if (isLocalhost === null) {
+    // Checking environment...
+    return <div className="min-h-screen bg-[#02080c]" />;
+  }
+
+  if (!isLocalhost) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-[#02080c] text-teal-400 font-cormorant flex-col gap-4">
+        <h1 className="text-4xl font-cinzel text-red-500">Access Denied</h1>
+        <p className="text-[#fed7aa] tracking-widest uppercase">Admin controls are offline in this sector.</p>
+      </div>
+    );
+  }
 
   if (!isAuthenticated) {
     return (
