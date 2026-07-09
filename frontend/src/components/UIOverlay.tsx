@@ -35,6 +35,7 @@ const GithubIcon = (props: React.SVGProps<SVGSVGElement>) => (
 import { useStore, PlanetType } from '../store/useStore';
 import { PLANETS_CONFIG } from '../utils/celestialData';
 import { api } from '../utils/api';
+import { MOON_LIMITS } from '../config/constants';
 import { audioManager } from '../utils/audio';
 import ViewToggle from './ViewToggle';
 import KeybindsPanel from './ui/KeybindsPanel';
@@ -169,9 +170,6 @@ function OrnamentalDivider() {
     </div>
   );
 }
-// KeybindsPanel and SunProfileModal are imported from ./ui/
-
-
 
 export default function UIOverlay() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -203,12 +201,10 @@ export default function UIOverlay() {
   };
 
   useEffect(() => {
-    // Ping visitor counter on mount
     api.pingVisitor().then((res) => {
       setVisitorCount(res.count);
     }).catch(console.error);
 
-    // Init audio on first click anywhere
     const handleFirstInteraction = () => {
       if (!audioStarted) {
         audioManager.init().then(() => setAudioStarted(true));
@@ -251,7 +247,6 @@ export default function UIOverlay() {
     };
   }, [setPlanet, setViewState, toggleFreeRoam, audioStarted, toggleUiHidden]);
 
-  // Trigger whoosh SFX when blackhole transition fires
   useEffect(() => {
     if (isBlackholeTransitioning) {
       audioManager.playBlackholeWhoosh();
@@ -287,9 +282,7 @@ export default function UIOverlay() {
     <>
     <div className="absolute inset-0 z-10 pointer-events-none flex flex-col justify-between p-6 select-none">
 
-      {/* --- TOP HUD BAR (status badge, offset below nav bar) --- */}
       <div className={`w-full flex justify-between items-center pointer-events-auto mt-12 ${hiddenClass}`}>
-        {/* Left side empty or reserved for future elements */}
         <div></div>
 
         <motion.div
@@ -302,8 +295,6 @@ export default function UIOverlay() {
         </motion.div>
       </div>
 
-
-      {/* --- FUNCTIONAL LOGO — large centered hero on initial load --- */}
       <AnimatePresence mode="wait">
         {currentState === 0 && (
           <motion.div
@@ -330,10 +321,8 @@ export default function UIOverlay() {
         )}
       </AnimatePresence>
 
-      {/* --- TOP NAVIGATION BAR --- */}
       <div className={`absolute top-0 left-0 right-0 pointer-events-auto z-[100] flex flex-col items-center ${hiddenClass}`}>
 
-        {/* Top Bar Strip */}
         <div
           className="w-full flex items-center justify-between px-6 py-2 backdrop-blur-md relative"
           style={{
@@ -341,11 +330,9 @@ export default function UIOverlay() {
             borderColor: `${activeColor}25`,
           }}
         >
-          {/* Corner accents */}
           <div className="absolute top-0 left-0 w-4 h-4 border-t border-l" style={{ borderColor: `${activeColor}60` }} />
           <div className="absolute top-0 right-0 w-4 h-4 border-t border-r" style={{ borderColor: `${activeColor}60` }} />
 
-          {/* Left: Logo — fades in when state > 0, wrapper maintains identical width to right side */}
           <div className="flex flex-col items-start justify-center min-w-[200px]">
             <AnimatePresence>
               {currentState !== 0 && !isUiHidden && (
@@ -368,10 +355,7 @@ export default function UIOverlay() {
             </AnimatePresence>
           </div>
 
-
-          {/* Center: Planet Nav Tabs */}
           <div className="flex items-center gap-1">
-            {/* Solar System Tab */}
             <button
               onClick={() => setPlanet(null)}
               className="group relative flex items-center gap-1.5 px-3 py-1.5 rounded transition-all duration-300 cursor-pointer"
@@ -407,10 +391,8 @@ export default function UIOverlay() {
               </span>
             </button>
 
-            {/* Divider */}
             <div className="w-px h-5 mx-1" style={{ backgroundColor: `${activeColor}20` }} />
 
-            {/* Planet Tabs */}
             {Object.values(PLANETS_CONFIG).map((planet) => {
               const isSelected = activePlanet === planet.type;
               const PlanetIcon = getPlanetIcon(planet.type);
@@ -458,7 +440,6 @@ export default function UIOverlay() {
             })}
           </div>
 
-          {/* Right: Audio toggle + COORD + View Toggle — same width as left */}
           <div className="flex items-center gap-4 min-w-[200px] justify-end">
 
             <ViewToggle />
@@ -485,7 +466,6 @@ export default function UIOverlay() {
                 {isMuted ? 'MUTED' : 'AUDIO'}
               </span>
             </button>
-            {/* Toggle expand for dropdown sub-nav */}
             <button
               onClick={() => setIsSidebarOpen(!isSidebarOpen)}
               className="flex items-center justify-center w-6 h-6 rounded border cursor-pointer transition-all"
@@ -512,7 +492,6 @@ export default function UIOverlay() {
           </div>
         </div>
 
-        {/* Dropdown Sub-Nav Panel (moons + mini map) */}
         <AnimatePresence>
           {isSidebarOpen && (
             <motion.div
@@ -528,7 +507,6 @@ export default function UIOverlay() {
             >
               <div className="flex items-start gap-6 px-6 py-4">
 
-                {/* Mini Orbital Map */}
                 <div
                   className="flex-shrink-0 flex flex-col items-center border rounded-lg p-3 relative transition-all duration-500"
                   style={{ backgroundColor: `${activeColor}08`, borderColor: `${activeColor}20`, minWidth: '120px' }}
@@ -559,7 +537,6 @@ export default function UIOverlay() {
                   </svg>
                 </div>
 
-                {/* Sub-items for active planet */}
                 <div className="flex-1">
                   {!activePlanet && (
                     <div className="flex flex-col gap-1">
@@ -572,10 +549,10 @@ export default function UIOverlay() {
                     const PlanetIcon = getPlanetIcon(activePlanet);
 
                     let subItems: { name: string, slug: string }[] = [];
-                    if (activePlanet === 'projects') subItems = projects.slice(0, 5).map(p => ({ name: p.title, slug: p.slug }));
-                    if (activePlanet === 'tech_stack') subItems = Array.from(new Set(techStack.map(t => t.category))).slice(0,4).map(c => ({ name: c, slug: c.toLowerCase() }));
-                    if (activePlanet === 'academics') subItems = academics.map(a => ({ name: a.degree.split(' ').slice(-2).join(' ') || a.institution.split(' ')[0], slug: `acad-${a.id}` }));
-                    if (activePlanet === 'socials') subItems = socials.slice(0,4).map(s => ({ name: s.platform, slug: s.platform.toLowerCase() }));
+                    if (activePlanet === 'projects') subItems = projects.slice(0, MOON_LIMITS.projects).map(p => ({ name: p.title, slug: p.slug }));
+                    if (activePlanet === 'tech_stack') subItems = Array.from(new Set(techStack.map(t => t.category))).slice(0, MOON_LIMITS.tech_stack).map(c => ({ name: c, slug: c.toLowerCase() }));
+                    if (activePlanet === 'academics') subItems = academics.slice(0, MOON_LIMITS.academics).map(a => ({ name: a.degree.split(' ').slice(-2).join(' ') || a.institution.split(' ')[0], slug: `acad-${a.id}` }));
+                    if (activePlanet === 'socials') subItems = socials.slice(0, MOON_LIMITS.socials).map(s => ({ name: s.platform, slug: s.platform.toLowerCase() }));
                     if (activePlanet === 'resume') {
                       if (resumeExperience.length > 0) subItems.push({ name: 'Experience', slug: 'resume-experience' });
                       if (resumeSkills.length > 0) subItems.push({ name: 'Skills', slug: 'resume-skills' });
@@ -639,17 +616,14 @@ export default function UIOverlay() {
                 </div>
 
               </div>
-              {/* Bottom border accent */}
               <div className="h-px w-full" style={{ background: `linear-gradient(to right, transparent, ${activeColor}40, transparent)` }} />
             </motion.div>
           )}
         </AnimatePresence>
       </div>
 
-      {/* --- PANEL OVERLAYS (STATE 2 & 3) --- */}
       <div className="flex-1 flex items-center justify-between pointer-events-none my-6 overflow-hidden">
 
-        {/* LEFT PANEL */}
         <AnimatePresence>
           {currentState === 3 && activePlanet && (
             <motion.div
@@ -795,7 +769,6 @@ export default function UIOverlay() {
                 {activePlanet === 'resume' && (() => {
                   const moon = activeMoon;
 
-                  // Badge emoji map for certifications
                   const badgeMap: Record<string, string> = {
                     cloud: '☁️', atom: '⚛️', shield: '🛡️', docker: '🐳', database: '🗄️',
                   };
@@ -898,7 +871,6 @@ export default function UIOverlay() {
                     </div>
                   );
 
-                  // Default: overview
                   return (
                     <div>
                       <h2 className={`font-cinzel text-3xl uppercase tracking-widest mb-2 ${theme.text} ${theme.glow}`}>Resume</h2>
@@ -916,7 +888,6 @@ export default function UIOverlay() {
           )}
         </AnimatePresence>
 
-        {/* ORBIT PANEL (Previously Right Panel, now on Left) */}
         <AnimatePresence>
           {currentState === 2 && activePlanet && planetConfig && (
             <motion.div
@@ -952,7 +923,7 @@ export default function UIOverlay() {
                 </div>
 
                 <div className="flex flex-col gap-2 max-h-[180px] overflow-y-auto custom-scrollbar pr-2">
-                  {activePlanet === 'projects' && projects.slice(0, 5).map((p, i) => (
+                  {activePlanet === 'projects' && projects.slice(0, MOON_LIMITS.projects).map((p, i) => (
                     <motion.button
                       key={p.slug}
                       initial={{ opacity: 0, x: -20 }}
@@ -964,7 +935,7 @@ export default function UIOverlay() {
                       {p.title}
                     </motion.button>
                   ))}
-                  {activePlanet === 'tech_stack' && Array.from(new Set(techStack.map(t => t.category))).map((cat, i) => (
+                  {activePlanet === 'tech_stack' && Array.from(new Set(techStack.map(t => t.category))).slice(0, MOON_LIMITS.tech_stack).map((cat, i) => (
                     <motion.button
                       key={cat}
                       initial={{ opacity: 0, x: -20 }}
@@ -976,7 +947,7 @@ export default function UIOverlay() {
                       {cat}
                     </motion.button>
                   ))}
-                  {activePlanet === 'academics' && academics.map((a, i) => (
+                  {activePlanet === 'academics' && academics.slice(0, MOON_LIMITS.academics).map((a, i) => (
                     <motion.button
                       key={a.id}
                       initial={{ opacity: 0, x: -20 }}
@@ -988,7 +959,7 @@ export default function UIOverlay() {
                       {a.institution}
                     </motion.button>
                   ))}
-                  {activePlanet === 'socials' && socials.map((s, i) => (
+                  {activePlanet === 'socials' && socials.slice(0, MOON_LIMITS.socials).map((s, i) => (
                     <motion.button
                       key={s.id}
                       initial={{ opacity: 0, x: -20 }}

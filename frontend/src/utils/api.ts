@@ -77,52 +77,81 @@ export interface ResumeCertification {
   order: number;
 }
 
+const cache = new Map<string, { data: any; ts: number }>();
+const TTL = 5 * 60 * 1000; // 5 minutes
+
+async function cachedFetch<T>(key: string, fetcher: () => Promise<T>): Promise<T> {
+  const hit = cache.get(key);
+  if (hit && Date.now() - hit.ts < TTL) return hit.data as T;
+  const data = await fetcher();
+  cache.set(key, { data, ts: Date.now() });
+  return data;
+}
+
 export const api = {
   getProjects: async (): Promise<Project[]> => {
-    const { data, error } = await supabase.from('projects').select('*');
-    if (error) throw error;
-    return data;
+    return cachedFetch('projects', async () => {
+      const { data, error } = await supabase.from('projects').select('*');
+      if (error) throw error;
+      return data;
+    });
   },
   getProject: async (slug: string): Promise<Project> => {
-    const { data, error } = await supabase.from('projects').select('*').eq('slug', slug).single();
-    if (error) throw error;
-    return data;
+    return cachedFetch(`project_${slug}`, async () => {
+      const { data, error } = await supabase.from('projects').select('*').eq('slug', slug).single();
+      if (error) throw error;
+      return data;
+    });
   },
   getTechStack: async (): Promise<TechStack[]> => {
-    const { data, error } = await supabase.from('tech_stacks').select('*');
-    if (error) throw error;
-    return data;
+    return cachedFetch('techStack', async () => {
+      const { data, error } = await supabase.from('tech_stacks').select('*');
+      if (error) throw error;
+      return data;
+    });
   },
   getAcademics: async (): Promise<Academic[]> => {
-    const { data, error } = await supabase.from('academics').select('*');
-    if (error) throw error;
-    return data;
+    return cachedFetch('academics', async () => {
+      const { data, error } = await supabase.from('academics').select('*');
+      if (error) throw error;
+      return data;
+    });
   },
   getSocials: async (): Promise<Social[]> => {
-    const { data, error } = await supabase.from('socials').select('*');
-    if (error) throw error;
-    return data;
+    return cachedFetch('socials', async () => {
+      const { data, error } = await supabase.from('socials').select('*');
+      if (error) throw error;
+      return data;
+    });
   },
   // Resume
   getResumeExperience: async (): Promise<ResumeExperience[]> => {
-    const { data, error } = await supabase.from('resume_experience').select('*').order('order', { ascending: true });
-    if (error) throw error;
-    return data;
+    return cachedFetch('resumeExperience', async () => {
+      const { data, error } = await supabase.from('resume_experience').select('*').order('order', { ascending: true });
+      if (error) throw error;
+      return data;
+    });
   },
   getResumeSkills: async (): Promise<ResumeSkill[]> => {
-    const { data, error } = await supabase.from('resume_skills').select('*');
-    if (error) throw error;
-    return data;
+    return cachedFetch('resumeSkills', async () => {
+      const { data, error } = await supabase.from('resume_skills').select('*');
+      if (error) throw error;
+      return data;
+    });
   },
   getResumeEducation: async (): Promise<ResumeEducation[]> => {
-    const { data, error } = await supabase.from('resume_education').select('*').order('order', { ascending: true });
-    if (error) throw error;
-    return data;
+    return cachedFetch('resumeEducation', async () => {
+      const { data, error } = await supabase.from('resume_education').select('*').order('order', { ascending: true });
+      if (error) throw error;
+      return data;
+    });
   },
   getResumeCertifications: async (): Promise<ResumeCertification[]> => {
-    const { data, error } = await supabase.from('resume_certifications').select('*').order('order', { ascending: true });
-    if (error) throw error;
-    return data;
+    return cachedFetch('resumeCertifications', async () => {
+      const { data, error } = await supabase.from('resume_certifications').select('*').order('order', { ascending: true });
+      if (error) throw error;
+      return data;
+    });
   },
   // Visitors
   getVisitorCount: async (): Promise<{ count: number }> => {

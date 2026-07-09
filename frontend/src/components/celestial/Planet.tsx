@@ -5,6 +5,7 @@ import { useFrame } from '@react-three/fiber';
 import { Html } from '@react-three/drei';
 import * as THREE from 'three';
 import { useStore } from '../../store/useStore';
+import { MOON_LIMITS } from '../../config/constants';
 import { PlanetConfig } from '../../utils/celestialData';
 import { audioManager } from '../../utils/audio';
 import {
@@ -147,28 +148,28 @@ export default function Planet({ config }: PlanetProps) {
     const sz = config.size;
     switch (config.type) {
       case 'projects':
-        return projects.slice(0, 5).map((p, i) => ({
+        return projects.slice(0, MOON_LIMITS.projects).map((p, i) => ({
           name: p.title, slug: p.slug,
           orbitRadius: sz + 0.6 + i * (0.35 * sz),
           orbitSpeed:  (0.9 - i * 0.15) / Math.max(1, sz * 0.5),
         }));
       case 'tech_stack': {
         const cats = Array.from(new Set(techStack.map((t) => t.category)));
-        return cats.slice(0, 4).map((cat, i) => ({
+        return cats.slice(0, MOON_LIMITS.tech_stack).map((cat, i) => ({
           name: cat, slug: cat.toLowerCase(),
           orbitRadius: sz + 0.5 + i * (0.3 * sz),
           orbitSpeed:  (0.8 - i * 0.12) / Math.max(1, sz * 0.5),
         }));
       }
       case 'academics':
-        return academics.map((a, i) => ({
+        return academics.slice(0, MOON_LIMITS.academics).map((a, i) => ({
           name: a.degree.split(' ').slice(-2).join(' ') || a.institution.split(' ')[0],
           slug: `acad-${a.id}`,
           orbitRadius: sz + 0.4 + i * (0.4 * sz),
           orbitSpeed:  (0.7 - i * 0.1) / Math.max(1, sz * 0.5),
         }));
       case 'socials':
-        return socials.slice(0, 4).map((s, i) => ({
+        return socials.slice(0, MOON_LIMITS.socials).map((s, i) => ({
           name: s.platform, slug: s.platform.toLowerCase(),
           orbitRadius: sz + 0.4 + i * (0.25 * sz),
           orbitSpeed:  (1.1 - i * 0.15) / Math.max(1, sz * 0.5),

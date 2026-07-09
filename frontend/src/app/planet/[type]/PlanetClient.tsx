@@ -113,14 +113,12 @@ const GithubIcon = (props: React.SVGProps<SVGSVGElement>) => (
 // =====================================================================
 
 function ProjectsSection({ projects, theme }: { projects: Project[]; theme: typeof PLANET_THEMES['projects'] }) {
-  const router = useRouter();
   return (
     <div>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {projects.map((project, i) => (
+          <Link href={`/project/${project.slug}`} key={project.slug} style={{ textDecoration: 'none' }}>
             <motion.div
-              key={project.slug}
-              onClick={() => router.push(`/project/${project.slug}`)}
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1 + i * 0.07 }}
@@ -178,6 +176,7 @@ function ProjectsSection({ projects, theme }: { projects: Project[]; theme: type
               ))}
             </div>
           </motion.div>
+          </Link>
         ))}
       </div>
     </div>

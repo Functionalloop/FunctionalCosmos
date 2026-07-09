@@ -36,7 +36,7 @@ export default function SunProfileModal({ onClose }: SunProfileModalProps) {
           animate={{ opacity: 1, scale: 1,    y: 0  }}
           exit={{    opacity: 0, scale: 0.9,  y: 20 }}
           transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
-          className="relative max-w-xl w-full mx-4 overflow-hidden rounded-2xl"
+          className="relative max-w-xl w-full mx-4 overflow-hidden rounded-2xl max-h-[90vh] flex flex-col"
           style={{
             background:  'linear-gradient(135deg, rgba(12,18,30,0.97) 0%, rgba(20,10,6,0.97) 100%)',
             border:      '1px solid rgba(254,215,170,0.18)',
