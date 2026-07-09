@@ -1,16 +1,18 @@
 'use client';
 import { useState, useEffect } from 'react';
 import { api } from '../../utils/api';
+import { saveRecord, deleteRecord } from '../../app/actions/admin';
 
+// We replaced 'path' (for the old backend) with 'table' (for Supabase)
 const ENDPOINTS = [
-  { name: 'Projects', get: api.getProjects, path: '/projects' },
-  { name: 'Tech Stack', get: api.getTechStack, path: '/tech-stack' },
-  { name: 'Academics', get: api.getAcademics, path: '/academics' },
-  { name: 'Socials', get: api.getSocials, path: '/socials' },
-  { name: 'Resume Experience', get: api.getResumeExperience, path: '/resume/experience' },
-  { name: 'Resume Skills', get: api.getResumeSkills, path: '/resume/skills' },
-  { name: 'Resume Education', get: api.getResumeEducation, path: '/resume/education' },
-  { name: 'Resume Certifications', get: api.getResumeCertifications, path: '/resume/certifications' },
+  { name: 'Projects', get: api.getProjects, table: 'projects' },
+  { name: 'Tech Stack', get: api.getTechStack, table: 'tech_stacks' },
+  { name: 'Academics', get: api.getAcademics, table: 'academics' },
+  { name: 'Socials', get: api.getSocials, table: 'socials' },
+  { name: 'Resume Experience', get: api.getResumeExperience, table: 'resume_experience' },
+  { name: 'Resume Skills', get: api.getResumeSkills, table: 'resume_skills' },
+  { name: 'Resume Education', get: api.getResumeEducation, table: 'resume_education' },
+  { name: 'Resume Certifications', get: api.getResumeCertifications, table: 'resume_certifications' },
 ];
 
 export default function AdminDashboard({ password }: { password: string }) {
@@ -19,7 +21,6 @@ export default function AdminDashboard({ password }: { password: string }) {
   const [editingItem, setEditingItem] = useState<any | null>(null);
   const [isCreating, setIsCreating] = useState(false);
   const [loading, setLoading] = useState(false);
-  const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api';
 
   useEffect(() => {
     fetchData();
@@ -39,31 +40,25 @@ export default function AdminDashboard({ password }: { password: string }) {
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    const method = isCreating ? 'POST' : 'PUT';
-    const url = isCreating ? `${API_BASE_URL}${activeTab.path}` : `${API_BASE_URL}${activeTab.path}/${editingItem.id}`;
     
     try {
       // Remove id before sending for create
       const payload = { ...editingItem };
       if (isCreating) delete payload.id;
 
-      const res = await fetch(url, {
-        method,
-        headers: {
-          'Content-Type': 'application/json',
-          'x-admin-password': password
-        },
-        body: JSON.stringify(payload)
-      });
-      if (!res.ok) {
-        throw new Error('Failed to save');
+      // Call the secure Server Action
+      const result = await saveRecord(activeTab.table, payload, isCreating);
+
+      if (!result.success) {
+        throw new Error(result.error);
       }
+
       await fetchData();
       setEditingItem(null);
       setIsCreating(false);
-    } catch(err) {
+    } catch(err: any) {
       console.error(err);
-      alert('Error saving data. Check console.');
+      alert(`Error saving data: ${err.message}`);
     }
     setLoading(false);
   };
@@ -72,17 +67,17 @@ export default function AdminDashboard({ password }: { password: string }) {
     if (!confirm('Are you sure you want to delete this?')) return;
     setLoading(true);
     try {
-      const res = await fetch(`${API_BASE_URL}${activeTab.path}/${id}`, {
-        method: 'DELETE',
-        headers: {
-          'x-admin-password': password
-        }
-      });
-      if (!res.ok) throw new Error('Failed to delete');
+      // Call the secure Server Action
+      const result = await deleteRecord(activeTab.table, id);
+      
+      if (!result.success) {
+        throw new Error(result.error);
+      }
+      
       await fetchData();
-    } catch(err) {
+    } catch(err: any) {
       console.error(err);
-      alert('Error deleting data.');
+      alert(`Error deleting data: ${err.message}`);
     }
     setLoading(false);
   };
