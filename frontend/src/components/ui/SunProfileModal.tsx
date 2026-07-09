@@ -88,10 +88,10 @@ export default function SunProfileModal({ onClose }: SunProfileModalProps) {
                 backgroundClip:        'text',
               }}
             >
-              Tanishq
+              Tanishq Deu Naik
             </h2>
-            <p className="font-cormorant text-[0.72rem] tracking-[0.38em] uppercase text-amber-200/40 mt-1 mb-0">
-              Systems Architect &amp; Full-Stack Developer
+            <p className="font-cormorant text-[0.72rem] tracking-[0.38em] uppercase text-amber-200/40 mt-1 mb-0 text-center">
+              Founder & Lead Developer, Functional Enterprises
             </p>
           </div>
 
@@ -103,18 +103,40 @@ export default function SunProfileModal({ onClose }: SunProfileModalProps) {
           </div>
 
           {/* Body */}
-          <div className="px-8 pb-8 space-y-4">
+          <div className="px-8 pb-8 space-y-4 overflow-y-auto custom-scrollbar max-h-[60vh]">
             <p className="font-cormorant text-base leading-relaxed" style={{ color: 'rgba(254,230,190,0.8)' }}>
-              I build systems that matter — from high-concurrency backend APIs to immersive 3D interfaces.
-              My craft sits at the intersection of{' '}
-              <span style={{ color: '#fb923c' }}>engineering precision</span> and{' '}
-              <span style={{ color: '#fbbf24' }}>design intuition</span>.
+              Based in Goa, I am a B.Tech student at Parul University and a technical founder dedicated to building out the "Functional" ecosystem. Bridging the gap between deep backend architecture, advanced AI integration, and practical business solutions, my work centers on delivering scalable, high-performance digital experiences.
             </p>
+
+            <h3 className="font-cinzel text-lg mt-4 mb-2" style={{ color: '#fb923c' }}>Founder & Lead Developer, Functional Enterprises</h3>
             <p className="font-cormorant text-base leading-relaxed" style={{ color: 'rgba(254,230,190,0.65)' }}>
-              Currently architecting scalable microservices and real-time collaborative tools at{' '}
-              <span style={{ color: '#fed7aa', fontWeight: 600 }}>FunctionalLoop Systems</span>.
-              B.Tech in Computer Science from NIT, specialising in distributed systems and computer graphics.
+              Serving as the core operational layer of the "Functional" brand, Functional Enterprises is a B2B IT solutions agency built to deliver professional digital services.
             </p>
+            <ul className="list-disc ml-5 font-cormorant text-sm space-y-1" style={{ color: 'rgba(254,230,190,0.65)' }}>
+              <li><strong>Technical & Strategic Direction:</strong> Sole technical founder and lead developer overseeing system architecture, full-stack development, and long-term startup strategy.</li>
+              <li><strong>Business Operations:</strong> Overseeing the overarching brand identity, social media presence, and client acquisition.</li>
+              <li><strong>Ecosystem Management:</strong> Operating alongside co-founder Aaditya, managing the larger umbrella of ventures and directing the <strong>FunctionalX</strong> team for collaborative hackathon projects.</li>
+            </ul>
+
+            <h3 className="font-cinzel text-lg mt-4 mb-2" style={{ color: '#fb923c' }}>Technical Expertise & Design Philosophy</h3>
+            <ul className="list-disc ml-5 font-cormorant text-sm space-y-1" style={{ color: 'rgba(254,230,190,0.65)' }}>
+              <li><strong>Core Engineering:</strong> Specialized in React, FastAPI, Node.js, and Java, supported by a strong foundation in Data Structures and Algorithms.</li>
+              <li><strong>Computer Vision & AI:</strong> Experience engineering real-time detection systems utilizing YOLOv8 and Google MediaPipe for sign language translation and object detection.</li>
+              <li><strong>Design Identity:</strong> A distinct preference for stark, minimalist branding utilizing clean, typographic designs on stark black backgrounds.</li>
+            </ul>
+
+            <h3 className="font-cinzel text-lg mt-4 mb-2" style={{ color: '#fb923c' }}>Leadership & Mentorship</h3>
+            <p className="font-cormorant text-base leading-relaxed" style={{ color: 'rgba(254,230,190,0.65)' }}>
+              A frequent hackathon participant and organizer, working alongside a core collaborative team to make advanced concepts accessible. This extends to peer mentorship through the development of structured study roadmaps and rapid-revision "survival guides" to help fellow students navigate technical exams.
+            </p>
+
+            <h3 className="font-cinzel text-lg mt-4 mb-2" style={{ color: '#fb923c' }}>2026 Milestones</h3>
+            <ul className="list-disc ml-5 font-cormorant text-sm space-y-1" style={{ color: 'rgba(254,230,190,0.65)' }}>
+              <li><strong>May 2026 (FunctionalLoop Cosmos):</strong> Developed a 3D orbital-themed web portfolio using Next.js and Three.js.</li>
+              <li><strong>April 2026 (Vibe Coding Workshop):</strong> Architected and organized a workshop teaching AI-driven development.</li>
+              <li><strong>Feb 2026 (The Carbon Engine):</strong> Developed a carbon-aware workload scheduler utilizing real-time telemetry.</li>
+              <li><strong>Jan 2026 (Bitathon 2026):</strong> Participated focusing heavily on applied statistics and SAS testing.</li>
+            </ul>
 
             {/* Stats */}
             <div className="grid grid-cols-3 gap-3 pt-2">

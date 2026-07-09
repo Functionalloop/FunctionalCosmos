@@ -269,15 +269,13 @@ export default function FlatPage() {
             </h1>
             <OrnamentalDivider color="#fb923c" />
             <h2 className="font-cinzel uppercase tracking-[0.28em] mt-4 mb-2 text-2xl text-transparent bg-clip-text bg-gradient-to-br from-[#fed7aa] to-[#fb923c]">
-              Tanishq
+              Tanishq Deu Naik
             </h2>
             <p className="font-cormorant text-[0.72rem] tracking-[0.38em] uppercase text-amber-200/40 mb-6">
-              Systems Architect &amp; Full-Stack Developer
+              Founder & Lead Developer, Functional Enterprises
             </p>
             <p className="font-cormorant text-lg leading-relaxed text-[rgba(254,230,190,0.8)] max-w-xl mb-8">
-              I build systems that matter — from high-concurrency backend APIs to immersive 3D interfaces.
-              My craft sits at the intersection of <span style={{ color: '#fb923c' }}>engineering precision</span> and{' '}
-              <span style={{ color: '#fbbf24' }}>design intuition</span>.
+              Based in Goa, I am a B.Tech student at Parul University and a technical founder dedicated to building out the "Functional" ecosystem. Bridging the gap between deep backend architecture, advanced AI integration, and practical business solutions.
             </p>
 
             <motion.div
